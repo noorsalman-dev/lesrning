@@ -1,0 +1,141 @@
+[gd_scene format=3 uid="uid://r3gv2upd3bjo"]
+
+[ext_resource type="Script" uid="uid://ch2d6mlib81ic" path="res://character_body_2d.gd" id="1_qug0s"]
+[ext_resource type="Texture2D" uid="uid://dsrffmi6vcrdd" path="res://brackeys_platformer_assets/sprites/knight.png" id="2_gd05a"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_27fpv"]
+radius = 6.0
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_86iwx"]
+atlas = ExtResource("2_gd05a")
+region = Rect2(0, 64, 32, 32)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_318mt"]
+atlas = ExtResource("2_gd05a")
+region = Rect2(32, 64, 32, 32)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_b8c3x"]
+atlas = ExtResource("2_gd05a")
+region = Rect2(64, 64, 32, 32)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_ogaei"]
+atlas = ExtResource("2_gd05a")
+region = Rect2(96, 64, 32, 32)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_mjxbh"]
+atlas = ExtResource("2_gd05a")
+region = Rect2(128, 64, 32, 32)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_pykq2"]
+atlas = ExtResource("2_gd05a")
+region = Rect2(160, 64, 32, 32)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_7y57j"]
+atlas = ExtResource("2_gd05a")
+region = Rect2(192, 64, 32, 32)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_1hjxj"]
+atlas = ExtResource("2_gd05a")
+region = Rect2(224, 64, 32, 32)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_0npi7"]
+atlas = ExtResource("2_gd05a")
+region = Rect2(0, 96, 32, 32)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_mu2pl"]
+atlas = ExtResource("2_gd05a")
+region = Rect2(32, 96, 32, 32)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_joior"]
+atlas = ExtResource("2_gd05a")
+region = Rect2(64, 96, 32, 32)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_kvipg"]
+atlas = ExtResource("2_gd05a")
+region = Rect2(96, 96, 32, 32)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_wpf5e"]
+atlas = ExtResource("2_gd05a")
+region = Rect2(128, 96, 32, 32)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_yb3qs"]
+atlas = ExtResource("2_gd05a")
+region = Rect2(160, 96, 32, 32)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_js44f"]
+atlas = ExtResource("2_gd05a")
+region = Rect2(192, 96, 32, 32)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_rs0n8"]
+atlas = ExtResource("2_gd05a")
+region = Rect2(224, 96, 32, 32)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_tepmc"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_86iwx")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_318mt")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_b8c3x")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_ogaei")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_mjxbh")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_pykq2")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_7y57j")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_1hjxj")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_0npi7")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_mu2pl")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_joior")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_kvipg")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_wpf5e")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_yb3qs")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_js44f")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_rs0n8")
+}],
+"loop": 1,
+"name": &"run",
+"speed": 13.0
+}]
+
+[node name="CharacterBody2D" type="CharacterBody2D" unique_id=1845632246]
+collision_layer = 2
+script = ExtResource("1_qug0s")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=710012870]
+shape = SubResource("CircleShape2D_27fpv")
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=1298327869]
+position = Vector2(0, -6)
+sprite_frames = SubResource("SpriteFrames_tepmc")
+animation = &"run"
+autoplay = "run"
+frame_progress = 0.0580117
