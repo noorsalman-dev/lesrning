@@ -1136,45 +1136,43 @@ class GameManager {
     document.querySelector("#recipe-book-status").textContent = matches.length ? `Showing ${visible.length} of ${matches.length} matching recipe variants` : "No recipes match that search.";
   }
 
-  loadMinecraftRecipe(recipeKey) {
-    const recipe = this.minecraftRecipes.find((entry) => entry.key === recipeKey);
-    if (!recipe) return;
-    const required = this.getRecipeCosts({ type: "minecraft", recipe });
-    const missing = Object.entries(required).filter(([item, count]) => (this.inventory[item] || 0) < count);
-    if (missing.length) {
-      this.pendingMinecraftRecipeKey = recipeKey;
-      const cost = missing.reduce((total, [item, count]) => total + (count - (this.inventory[item] || 0)) * 2, 0);
-      const supplyButton = document.querySelector("#recipe-supply");
-      supplyButton.hidden = false;
-      supplyButton.disabled = this.coins < cost;
-      supplyButton.textContent = `Supply missing items · ${cost} coins`;
-      document.querySelector("#recipe-book-status").textContent = `Missing: ${missing.map(([item, count]) => `${count - (this.inventory[item] || 0)} ${this.getItemInfo(item).name}`).join(", ")}`;
-      this.toast(supplyButton.disabled ? "Collect more coins to buy these ingredients" : "Use coins to supply the missing ingredients");
-      return;
-    }
-    this.pendingMinecraftRecipeKey = null;
-    document.querySelector("#recipe-supply").hidden = true;
-    this.craftingGrid = Array(9).fill(null);
-    if (recipe.shape) {
-      const offsetY = Math.floor((3 - recipe.shape.length) / 2);
-      const width = Math.max(...recipe.shape.map((row) => row.length));
-      const offsetX = Math.floor((3 - width) / 2);
-      for (let y = 0; y < recipe.shape.length; y++) {
-        for (let x = 0; x < recipe.shape[y].length; x++) {
-          const material = recipe.shape[y][x];
-          if (material) this.craftingGrid[(y + offsetY) * 3 + x + offsetX] = { material, count: 1 };
+  async loadMinecraftRecipeBook() {
+    const status = document.querySelector("#recipe-book-status");
+    try {
+        // Set 'vv' as the main data provider
+        const items = vv.items;
+        const rawRecipes = vv.recipes;
+
+        this.minecraftItemsById = new Map(Object.entries(items).map(([id, item]) => ([id, item])));
+        this.minecraftItemsByName = new Map(Object.entries(items).map(([id, item]) => ([item.name, item])));
+        this.minecraftRecipes = [];
+
+        for (const [outputId, variants] of Object.entries(rawRecipes)) {
+            const outputItem = this.minecraftItemsById.get(Number(outputId));
+            if (!outputItem) continue;
+
+            for (const [variantIndex, rawRecipe] of variants.entries()) {
+                const resultItem = this.minecraftItemsById.get(rawRecipe.result.id);
+                if (!resultItem) continue;
+
+                this.minecraftRecipes.push({
+                    key: `${outputId}-${variantIndex}`,
+                    output: outputItem,
+                    result: resultItem,
+                    ingredients: rawRecipe.ingredients || [],
+                    shape: rawRecipe.inShape || null
+                });
+            }
         }
-      }
-    } else {
-      recipe.ingredients.forEach((material, index) => {
-        const existing = this.craftingGrid.find((item) => item?.material === material);
-        if (existing) existing.count += 1;
-        else this.craftingGrid[index] = { material, count: 1 };
-      });
+
+        if (status) status.textContent = "Recipes loaded successfully from vv!";
+        this.renderMinecraftRecipeBook();
+    } catch (error) {
+        if (status) status.textContent = "Error parsing recipes from vv data store.";
+        console.error(error);
     }
-    this.selectedCraftMaterial = null;
-    this.updateHud(true);
-  }
+}
+
 
   buyMissingRecipeIngredients() {
     const recipe = this.minecraftRecipes.find((entry) => entry.key === this.pendingMinecraftRecipeKey);
