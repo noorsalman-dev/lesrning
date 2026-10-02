@@ -200,7 +200,8 @@ class MapManager {
     for (let y = startY; y < endY; y++) {
       for (let x = startX; x < endX; x++) {
         const left = x * TILE;
-    fetch("./recipes.json")    const top = y * TILE;
+    const top = y * TILE;
+
         context.fillStyle = ((x * 13 + y * 7) % 5 === 0) ? "#1c2520" : "#19211d";
         context.fillRect(left, top, TILE, TILE);
         if ((x * 17 + y * 11) % 7 === 0) {
