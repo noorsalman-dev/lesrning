@@ -1047,7 +1047,7 @@ class GameManager {
   async loadMinecraftRecipeBook() {
     const status = document.querySelector("#recipe-book-status");
     try {
-      const dataRoot = "node_modules/minecraft-data/data/pc/1.21.4/";
+      const dataRoot = "./minecraft-data/";
       const [itemResponse, recipeResponse] = await Promise.all([
         fetch(`${dataRoot}items.json`),
         fetch(`${dataRoot}recipes.json`),
