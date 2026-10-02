@@ -1,5 +1,11 @@
 "use strict";
 
+
+
+const vv = {
+  items: {},
+  recipes: {}
+};
 const TILE = 40;
 const MAP_WIDTH = 64;
 const MAP_HEIGHT = 44;
@@ -1047,7 +1053,8 @@ class GameManager {
   async loadMinecraftRecipeBook() {
     const status = document.querySelector("#recipe-book-status");
     try {
-      const dataRoot = "./minecraft-data/";
+      const dataRoot = "node_modules/minecraft-data/minecraft-data/data/pc/1.21.4/";  
+      //thguguvftyjvcsrtszgvkoklloflrldrk
       const [itemResponse, recipeResponse] = await Promise.all([
         fetch(`${dataRoot}items.json`),
         fetch(`${dataRoot}recipes.json`),
