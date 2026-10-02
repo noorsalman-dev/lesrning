@@ -961,6 +961,7 @@ class GameManager {
     this.minecraftItemsByName = new Map();
     this.minecraftItemsById = new Map();
     this.recipeBookLimit = 40;
+    this.pendingMinecraftRecipeKey = null;
     this.bindInterface();
     this.updateHud(true);
     this.loadMinecraftRecipeBook();
@@ -1016,6 +1017,7 @@ class GameManager {
       this.recipeBookLimit = 40;
       this.renderMinecraftRecipeBook();
     });
+    document.querySelector("#recipe-supply").addEventListener("click", () => this.buyMissingRecipeIngredients());
     document.querySelector("#minecraft-recipe-list").addEventListener("click", (event) => {
       const recipeButton = event.target.closest("[data-recipe-key]");
       if (recipeButton) this.loadMinecraftRecipe(recipeButton.dataset.recipeKey);
@@ -1130,12 +1132,21 @@ class GameManager {
   loadMinecraftRecipe(recipeKey) {
     const recipe = this.minecraftRecipes.find((entry) => entry.key === recipeKey);
     if (!recipe) return;
-    const required = recipe.shape ? recipe.shape.flat().filter(Boolean).reduce((counts, item) => ({ ...counts, [item]: (counts[item] || 0) + 1 }), {}) : recipe.ingredients.reduce((counts, item) => ({ ...counts, [item]: (counts[item] || 0) + 1 }), {});
+    const required = this.getRecipeCosts({ type: "minecraft", recipe });
     const missing = Object.entries(required).filter(([item, count]) => (this.inventory[item] || 0) < count);
     if (missing.length) {
-      this.toast(`Need ${missing.map(([item, count]) => `${count - (this.inventory[item] || 0)} ${RESOURCE_NAMES[item]?.name || item}`).join(", ")}`);
+      this.pendingMinecraftRecipeKey = recipeKey;
+      const cost = missing.reduce((total, [item, count]) => total + (count - (this.inventory[item] || 0)) * 2, 0);
+      const supplyButton = document.querySelector("#recipe-supply");
+      supplyButton.hidden = false;
+      supplyButton.disabled = this.coins < cost;
+      supplyButton.textContent = `Supply missing items · ${cost} coins`;
+      document.querySelector("#recipe-book-status").textContent = `Missing: ${missing.map(([item, count]) => `${count - (this.inventory[item] || 0)} ${this.getItemInfo(item).name}`).join(", ")}`;
+      this.toast(supplyButton.disabled ? "Collect more coins to buy these ingredients" : "Use coins to supply the missing ingredients");
       return;
     }
+    this.pendingMinecraftRecipeKey = null;
+    document.querySelector("#recipe-supply").hidden = true;
     this.craftingGrid = Array(9).fill(null);
     if (recipe.shape) {
       const offsetY = Math.floor((3 - recipe.shape.length) / 2);
@@ -1156,6 +1167,19 @@ class GameManager {
     }
     this.selectedCraftMaterial = null;
     this.updateHud(true);
+  }
+
+  buyMissingRecipeIngredients() {
+    const recipe = this.minecraftRecipes.find((entry) => entry.key === this.pendingMinecraftRecipeKey);
+    if (!recipe) return;
+    const required = this.getRecipeCosts({ type: "minecraft", recipe });
+    const missing = Object.entries(required).filter(([item, count]) => (this.inventory[item] || 0) < count);
+    const cost = missing.reduce((total, [item, count]) => total + (count - (this.inventory[item] || 0)) * 2, 0);
+    if (this.coins < cost) { this.toast(`Need ${cost - this.coins} more coins for the ingredients`); return; }
+    this.coins -= cost;
+    for (const [item, count] of missing) this.inventory[item] = (this.inventory[item] || 0) + count - (this.inventory[item] || 0);
+    this.loadMinecraftRecipe(recipe.key);
+    this.toast(`Ingredients supplied · ${cost} coins`);
   }
 
   selectTool(tool) {
@@ -1586,6 +1610,15 @@ class GameManager {
     document.querySelector("#enemy-value").textContent = String(this.monsters.monsters.length).padStart(2, "0");
     document.querySelector("#creeper-value").textContent = String(this.creepers).padStart(3, "0");
     document.querySelector("#coin-value").textContent = String(this.coins);
+    const pendingRecipe = this.minecraftRecipes.find((recipe) => recipe.key === this.pendingMinecraftRecipeKey);
+    const supplyButton = document.querySelector("#recipe-supply");
+    if (pendingRecipe) {
+      const missing = Object.entries(this.getRecipeCosts({ type: "minecraft", recipe: pendingRecipe })).filter(([item, count]) => (this.inventory[item] || 0) < count);
+      const supplyCost = missing.reduce((total, [item, count]) => total + (count - (this.inventory[item] || 0)) * 2, 0);
+      supplyButton.hidden = missing.length === 0;
+      supplyButton.disabled = this.coins < supplyCost;
+      supplyButton.textContent = `Supply missing items · ${supplyCost} coins`;
+    }
     document.querySelector("#health-value").textContent = String(Math.ceil(this.health));
     const fill = document.querySelector("#health-fill");
     fill.style.width = `${this.health}%`;

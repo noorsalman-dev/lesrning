@@ -89,6 +89,7 @@
     .craft-recipe { padding: 10px; background: #202b25; border: 1px solid #354239; }
     .recipe-search { width: 100%; min-height: 34px; margin: 0 0 8px; padding: 0 9px; border: 1px solid #455348; background: #111815; color: var(--ink); font: inherit; font-size: 11px; }
     .recipe-book-status { margin: 0 0 7px; color: var(--muted); font-size: 9px; }
+    .recipe-supply { width: 100%; margin: 0 0 8px; }
     .minecraft-recipe-list { display: grid; gap: 5px; max-height: 345px; overflow: auto; padding-right: 3px; }
     .minecraft-recipe { display: grid; grid-template-columns: 54px minmax(0, 1fr) auto; align-items: center; gap: 8px; width: 100%; min-height: 60px; padding: 6px; text-align: left; background: #202b25; border: 1px solid #354239; cursor: pointer; }
     .minecraft-recipe:hover { border-color: var(--lime); background: #29372f; }
@@ -280,7 +281,7 @@
       <header class="crafting-head"><div class="brand-gem" aria-hidden="true"></div><div><p class="eyebrow">Inventory / workbench</p><h2 id="crafting-title">Crafting box</h2></div><div class="top-spacer"></div><button class="close-crafting" id="close-crafting" aria-label="Close crafting box">×</button></header>
       <div class="crafting-content">
         <section class="crafting-section"><h3>Everything you carry</h3><div class="box-grid" id="box-inventory"></div></section>
-        <section class="crafting-section"><h3>Minecraft recipe book <small id="recipe-count">Loading</small></h3><input class="recipe-search" id="recipe-search" type="search" placeholder="Search 1.21.4 recipes" aria-label="Search Minecraft recipes"><p class="recipe-book-status" id="recipe-book-status">Loading local recipe catalog…</p><div class="minecraft-recipe-list" id="minecraft-recipe-list"></div></section>
+        <section class="crafting-section"><h3>Minecraft recipe book <small id="recipe-count">Loading</small></h3><input class="recipe-search" id="recipe-search" type="search" placeholder="Search 1.21.4 recipes" aria-label="Search Minecraft recipes"><p class="recipe-book-status" id="recipe-book-status">Loading local recipe catalog…</p><button class="craft-action recipe-supply" id="recipe-supply" hidden>Supply missing ingredients</button><div class="minecraft-recipe-list" id="minecraft-recipe-list"></div></section>
         <section class="crafting-section"><h3>Infinity recipes</h3><div class="craft-recipe-list">
           <div class="craft-recipe"><div class="craft-recipe-title"><span>Stone sword</span><span>⚔</span></div><p>Place 2 stone vertically above 1 stick.</p><button class="craft-action" data-fill="sword">Load ingredients</button></div>
           <div class="craft-recipe"><div class="craft-recipe-title"><span>Auto turret</span><span>DEFENSE</span></div><p>3 stone + 2 crystal. Place it and it automatically attacks nearby monsters.</p><button class="craft-action" data-fill="turret">Load ingredients</button></div>
