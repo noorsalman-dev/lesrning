@@ -1,218 +1,273 @@
 <!DOCTYPE html>
 <html lang="en">
-	<head>
-		<meta charset="utf-8">
-		<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0">
-		<title>lesrning</title>
-		<style>
-html, body, #canvas {
-	margin: 0;
-	padding: 0;
-	border: 0;
-}
-
-body {
-	color: white;
-	background-color: black;
-	overflow: hidden;
-	touch-action: none;
-}
-
-#canvas {
-	display: block;
-}
-
-#canvas:focus {
-	outline: none;
-}
-
-#status, #status-splash, #status-progress {
-	position: absolute;
-	left: 0;
-	right: 0;
-}
-
-#status, #status-splash {
-	top: 0;
-	bottom: 0;
-}
-
-#status {
-	background-color: #242424;
-	display: flex;
-	flex-direction: column;
-	justify-content: center;
-	align-items: center;
-	visibility: hidden;
-}
-
-#status-splash {
-	max-height: 100%;
-	max-width: 100%;
-	margin: auto;
-}
-
-#status-splash.show-image--false {
-	display: none;
-}
-
-#status-splash.fullsize--true {
-	height: 100%;
-	width: 100%;
-	object-fit: contain;
-}
-
-#status-splash.use-filter--false {
-	image-rendering: pixelated;
-}
-
-#status-progress, #status-notice {
-	display: none;
-}
-
-#status-progress {
-	bottom: 10%;
-	width: 50%;
-	margin: 0 auto;
-}
-
-#status-notice {
-	background-color: #5b3943;
-	border-radius: 0.5rem;
-	border: 1px solid #9b3943;
-	color: #e0e0e0;
-	font-family: 'Noto Sans', 'Droid Sans', Arial, sans-serif;
-	line-height: 1.3;
-	margin: 0 2rem;
-	overflow: hidden;
-	padding: 1rem;
-	text-align: center;
-	z-index: 1;
-}
-		</style>
-		
-	</head>
-	<body>
-		<canvas id="canvas">
-			Your browser does not support the canvas tag.
-		</canvas>
-
-		<noscript>
-			Your browser does not support JavaScript.
-		</noscript>
-
-		<div id="status">
-			<img id="status-splash" class="show-image--true fullsize--true use-filter--true" src="index.png" alt="">
-			<progress id="status-progress"></progress>
-			<div id="status-notice"></div>
-		</div>
-
-		<script src="index.js"></script>
-		<script>
-const GODOT_CONFIG = {"args":[],"canvasResizePolicy":2,"emscriptenPoolSize":8,"ensureCrossOriginIsolationHeaders":false,"executable":"index","experimentalVK":false,"fileSizes":{"index.pck":4893280,"index.wasm":38228980},"focusCanvas":false,"gdextensionLibs":[],"godotPoolSize":4};
-const GODOT_THREADS_ENABLED = false;
-const engine = new Engine(GODOT_CONFIG);
-
-(function () {
-	const statusOverlay = document.getElementById('status');
-	const statusProgress = document.getElementById('status-progress');
-	const statusNotice = document.getElementById('status-notice');
-
-	let initializing = true;
-	let statusMode = '';
-
-	function setStatusMode(mode) {
-		if (statusMode === mode || !initializing) {
-			return;
-		}
-		if (mode === 'hidden') {
-			statusOverlay.remove();
-			initializing = false;
-			return;
-		}
-		statusOverlay.style.visibility = 'visible';
-		statusProgress.style.display = mode === 'progress' ? 'block' : 'none';
-		statusNotice.style.display = mode === 'notice' ? 'block' : 'none';
-		statusMode = mode;
-	}
-
-	function setStatusNotice(text) {
-		while (statusNotice.lastChild) {
-			statusNotice.removeChild(statusNotice.lastChild);
-		}
-		const lines = text.split('\n');
-		lines.forEach((line) => {
-			statusNotice.appendChild(document.createTextNode(line));
-			statusNotice.appendChild(document.createElement('br'));
-		});
-	}
-
-	function displayFailureNotice(err) {
-		console.error(err);
-		if (err instanceof Error) {
-			setStatusNotice(err.message);
-		} else if (typeof err === 'string') {
-			setStatusNotice(err);
-		} else {
-			setStatusNotice('An unknown error occurred.');
-		}
-		setStatusMode('notice');
-		initializing = false;
-	}
-
-	const missing = Engine.getMissingFeatures({
-		threads: GODOT_THREADS_ENABLED,
-	});
-
-	if (missing.length !== 0) {
-		if (GODOT_CONFIG['serviceWorker'] && GODOT_CONFIG['ensureCrossOriginIsolationHeaders'] && 'serviceWorker' in navigator) {
-			let serviceWorkerRegistrationPromise;
-			try {
-				serviceWorkerRegistrationPromise = navigator.serviceWorker.getRegistration();
-			} catch (err) {
-				serviceWorkerRegistrationPromise = Promise.reject(new Error('Service worker registration failed.'));
-			}
-			// There's a chance that installing the service worker would fix the issue
-			Promise.race([
-				serviceWorkerRegistrationPromise.then((registration) => {
-					if (registration != null) {
-						return Promise.reject(new Error('Service worker already exists.'));
-					}
-					return registration;
-				}).then(() => engine.installServiceWorker()),
-				// For some reason, `getRegistration()` can stall
-				new Promise((resolve) => {
-					setTimeout(() => resolve(), 2000);
-				}),
-			]).then(() => {
-				// Reload if there was no error.
-				window.location.reload();
-			}).catch((err) => {
-				console.error('Error while registering service worker:', err);
-			});
-		} else {
-			// Display the message as usual
-			const missingMsg = 'Error\nThe following features required to run Godot projects on the Web are missing:\n';
-			displayFailureNotice(missingMsg + missing.join('\n'));
-		}
-	} else {
-		setStatusMode('progress');
-		engine.startGame({
-			'onProgress': function (current, total) {
-				if (current > 0 && total > 0) {
-					statusProgress.value = current;
-					statusProgress.max = total;
-				} else {
-					statusProgress.removeAttribute('value');
-					statusProgress.removeAttribute('max');
-				}
-			},
-		}).then(() => {
-			setStatusMode('hidden');
-		}, displayFailureNotice);
-	}
-}());
-		</script>
-	</body>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#111916">
+  <title>Infinity</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --ink: #e8eee4;
+      --muted: #9ba99d;
+      --panel: #1a2420;
+      --panel-2: #202d27;
+      --line: #35443b;
+      --lime: #d1ed69;
+      --mint: #75e0b4;
+      --copper: #ed9b62;
+      --danger: #f27672;
+      --display: "Arial Narrow", "Franklin Gothic Medium", "Trebuchet MS", sans-serif;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; background: #111916; color: var(--ink); }
+    body { min-height: 100vh; font-family: "Trebuchet MS", "Segoe UI", sans-serif; }
+    button { color: inherit; font: inherit; }
+    .app { min-height: 100vh; max-width: 1680px; margin: 0 auto; padding: 18px 22px 16px; display: flex; flex-direction: column; gap: 14px; }
+    .topbar { display: flex; align-items: center; gap: 14px; min-height: 62px; border-bottom: 1px solid var(--line); padding: 0 2px 13px; }
+    .brand-gem { width: 38px; height: 38px; flex: 0 0 auto; background: var(--lime); clip-path: polygon(25% 0, 75% 0, 100% 50%, 75% 100%, 25% 100%, 0 50%); position: relative; }
+    .brand-gem::after { content: ""; position: absolute; inset: 7px; background: #273321; clip-path: polygon(25% 0, 75% 0, 100% 50%, 75% 100%, 25% 100%, 0 50%); }
+    .brand-copy { min-width: 0; }
+    .eyebrow { color: var(--mint); font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 1.5px; margin: 0 0 2px; }
+    h1 { margin: 0; font: 700 23px/1 var(--display); text-transform: uppercase; letter-spacing: .5px; }
+    .top-spacer { flex: 1; }
+    .top-stat { min-width: 82px; border-left: 1px solid var(--line); padding-left: 14px; }
+    .stat-label { display: block; color: var(--muted); font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.2px; margin-bottom: 5px; }
+    .stat-value { font: 700 17px/1 var(--display); }
+    .health-stat { min-width: 155px; }
+    .health-line { display: flex; gap: 9px; align-items: center; }
+    .health-track { width: 91px; height: 7px; background: #39443e; overflow: hidden; }
+    .health-fill { width: 100%; height: 100%; background: var(--mint); transition: width .15s ease, background .15s ease; }
+    .layout { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(0, 1fr) 286px; gap: 14px; }
+    .play-column { min-width: 0; min-height: 440px; display: flex; flex-direction: column; }
+    .world-frame { flex: 1; min-height: 440px; position: relative; overflow: hidden; border: 1px solid #405046; background: #151d1a; box-shadow: 0 12px 32px #080d0b80; }
+    #game-canvas { display: block; width: 100%; height: 100%; min-height: 440px; touch-action: none; cursor: crosshair; }
+    .world-topline { position: absolute; inset: 12px 13px auto; display: flex; align-items: flex-start; justify-content: space-between; pointer-events: none; }
+    .world-tag { background: #151d1ae8; border: 1px solid #465449; padding: 7px 10px; color: #bdc9bd; font: 700 10px/1 var(--display); text-transform: uppercase; letter-spacing: 1px; }
+    .world-tag strong { color: var(--lime); }
+    .toast { position: absolute; left: 50%; top: 17%; transform: translate(-50%, -8px); opacity: 0; transition: opacity .18s, transform .18s; background: #101713ed; border-left: 3px solid var(--lime); padding: 10px 14px; color: var(--ink); font-size: 13px; font-weight: 700; pointer-events: none; white-space: nowrap; }
+    .toast.show { opacity: 1; transform: translate(-50%, 0); }
+    .game-over { position: absolute; inset: 0; background: #101713d9; display: grid; place-items: center; }
+    .game-over[hidden] { display: none; }
+    .over-panel { width: min(340px, calc(100% - 32px)); background: var(--panel); border: 1px solid #566458; padding: 24px; text-align: center; }
+    .over-panel h2 { margin: 0 0 8px; font: 700 30px/1 var(--display); text-transform: uppercase; }
+    .over-panel p { color: var(--muted); font-size: 13px; }
+    .primary-button { min-height: 40px; border: 0; background: var(--lime); color: #192016; padding: 0 16px; font-weight: 900; text-transform: uppercase; cursor: pointer; }
+    .craft-open { min-height: 34px; border: 1px solid #52604d; background: #202d27; padding: 0 11px; color: var(--lime); font-size: 10px; font-weight: 900; text-transform: uppercase; cursor: pointer; }
+    .craft-open:hover { background: #2b3a30; border-color: var(--lime); }
+    .crafting-modal { width: min(760px, calc(100vw - 24px)); max-height: min(760px, calc(100dvh - 24px)); padding: 0; border: 1px solid #617060; background: #17201b; color: var(--ink); box-shadow: 0 24px 100px #000b; }
+    .crafting-modal::backdrop { background: #050907c9; backdrop-filter: blur(4px); }
+    .crafting-inner { padding: 20px; }
+    .crafting-head { display: flex; align-items: center; gap: 12px; padding-bottom: 14px; border-bottom: 1px solid var(--line); }
+    .crafting-head h2 { margin: 3px 0 0; font: 700 25px/1 var(--display); text-transform: uppercase; }
+    .crafting-head .top-spacer { display: block; }
+    .close-crafting { width: 34px; height: 34px; border: 1px solid var(--line); background: var(--panel-2); color: var(--ink); font-size: 21px; cursor: pointer; }
+    .crafting-content { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; padding-top: 16px; }
+    .crafting-section h3 { margin: 0 0 9px; color: var(--muted); font-size: 10px; text-transform: uppercase; letter-spacing: 1px; }
+    .box-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 7px; }
+    .box-item { min-height: 74px; padding: 8px; display: flex; flex-direction: column; justify-content: space-between; background: #202b25; border: 1px solid #354239; }
+    .box-item-top { display: flex; align-items: center; gap: 7px; color: #bdc8bc; font-size: 10px; text-transform: uppercase; font-weight: 800; }
+    .box-item-swatch { width: 13px; height: 13px; flex: 0 0 auto; background: var(--swatch); border: 1px solid #ffffff60; }
+    .box-item-count { align-self: flex-end; color: var(--ink); font: 700 20px/1 var(--display); }
+    .craft-recipe-list { display: grid; gap: 7px; }
+    .craft-recipe { padding: 10px; background: #202b25; border: 1px solid #354239; }
+    .craft-recipe-title { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 4px; font: 700 13px/1 var(--display); text-transform: uppercase; }
+    .craft-recipe p { min-height: 25px; margin: 0 0 8px; color: var(--muted); font-size: 10px; line-height: 1.35; }
+    .craft-action { width: 100%; min-height: 31px; border: 1px solid #56654f; background: #29382e; color: var(--lime); font-size: 9px; font-weight: 900; text-transform: uppercase; cursor: pointer; }
+    .craft-action:hover:not(:disabled) { background: #344731; }
+    .craft-action:disabled { opacity: .42; cursor: not-allowed; }
+    .crafting-note { grid-column: 1 / -1; margin: 0; color: #94a296; font-size: 10px; line-height: 1.5; }
+    .touch-pad { display: none; }
+    .rail { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+    .panel { border: 1px solid var(--line); background: var(--panel); padding: 13px; }
+    .panel-heading { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; margin: 0 0 11px; font: 700 13px/1 var(--display); text-transform: uppercase; letter-spacing: .8px; }
+    .panel-heading small { color: var(--muted); font: 700 9px/1 "Trebuchet MS", sans-serif; letter-spacing: .4px; }
+    #minimap { display: block; width: 100%; height: 112px; background: #111815; border: 1px solid #344139; image-rendering: pixelated; }
+    .map-legend { display: flex; justify-content: space-between; padding-top: 8px; color: var(--muted); font-size: 9px; text-transform: uppercase; letter-spacing: .5px; }
+    .legend-dot { display: inline-block; width: 6px; height: 6px; margin-right: 4px; vertical-align: 1px; background: var(--mint); }
+    .legend-dot.enemy { background: var(--danger); }
+    .inventory-list { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+    .material { min-height: 45px; padding: 7px 8px; display: grid; grid-template-columns: 18px 1fr auto; align-items: center; gap: 6px; background: var(--panel-2); border: 1px solid #303e35; }
+    .material-swatch { width: 14px; height: 14px; background: var(--swatch); border: 1px solid #ffffff52; }
+    .material-name { color: #bdc8bc; font-size: 10px; text-transform: uppercase; font-weight: 700; }
+    .material-count { color: var(--ink); font: 700 15px/1 var(--display); }
+    .shop-list { display: grid; gap: 5px; }
+    .shop-item { width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 7px 8px; text-align: left; background: #202d27; border: 1px solid #344139; cursor: pointer; }
+    .shop-item:hover:not(:disabled) { border-color: var(--lime); background: #29372f; }
+    .shop-item:disabled { opacity: .45; cursor: not-allowed; }
+    .shop-name { font-size: 10px; font-weight: 800; text-transform: uppercase; }
+    .shop-cost { color: var(--copper); font-size: 10px; font-weight: 800; }
+    .recipes { display: grid; gap: 7px; }
+    .recipe { display: grid; grid-template-columns: 24px 1fr; gap: 8px; align-items: center; color: #c8d2c8; font-size: 10px; line-height: 1.3; }
+    .recipe-mark { width: 22px; height: 22px; display: grid; place-items: center; color: var(--lime); border: 1px solid #52604d; font: 700 12px var(--display); }
+    .recipe strong { display: block; color: var(--ink); font-size: 10px; text-transform: uppercase; }
+    .forge-costs { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; margin: 0 0 9px; }
+    .forge-costs span { display: flex; justify-content: space-between; gap: 5px; padding: 6px; background: var(--panel-2); color: var(--muted); font-size: 9px; text-transform: uppercase; }
+    .forge-costs b { color: var(--copper); font-size: 9px; white-space: nowrap; }
+    .forge-costs .requirement-met { color: var(--mint); }
+    .forge-button { min-height: 34px; }
+    .forge-button:disabled { opacity: .55; }
+    .loadout-slots { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 7px; }
+    .loadout-slot { min-height: 76px; padding: 8px; display: flex; align-items: center; gap: 8px; background: #202b25; border: 1px solid #56604e; color: var(--ink); text-align: left; cursor: pointer; }
+    .loadout-slot:hover, .loadout-slot.is-selected { border-color: var(--lime); background: #2d392e; }
+    .loadout-slot:disabled { opacity: .45; cursor: not-allowed; }
+    .loadout-slot canvas, .loadout-item canvas { width: 32px; height: 32px; flex: 0 0 auto; }
+    .loadout-slot-copy { display: grid; gap: 4px; min-width: 0; }
+    .loadout-slot-copy small { color: var(--muted); font-size: 9px; text-transform: uppercase; }
+    .loadout-slot-copy strong { overflow: hidden; font-size: 10px; text-overflow: ellipsis; text-transform: uppercase; }
+    .loadout-items { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 7px; }
+    .loadout-item { min-height: 72px; display: grid; justify-items: center; align-content: center; gap: 4px; background: #202b25; border: 1px solid #354239; color: var(--ink); cursor: pointer; }
+    .loadout-item:hover, .loadout-item.is-selected { border-color: var(--lime); background: #2d392e; }
+    .loadout-item:disabled { opacity: .4; cursor: not-allowed; }
+    .loadout-item span { max-width: 100%; overflow: hidden; color: #c6d0c5; font-size: 9px; text-overflow: ellipsis; text-transform: uppercase; }
+    .loadout-item strong { color: var(--lime); font: 700 12px/1 var(--display); }
+    .bottom { display: flex; align-items: center; gap: 14px; min-height: 68px; padding: 9px 12px; border: 1px solid var(--line); background: var(--panel); }
+    .tool-caption { width: 83px; flex: 0 0 auto; }
+    .tool-caption span { display: block; color: var(--muted); font-size: 9px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; }
+    .tool-caption strong { display: block; margin-top: 4px; color: var(--lime); font: 700 13px/1 var(--display); text-transform: uppercase; }
+    .tool-list { display: flex; gap: 7px; flex: 1; min-width: 0; }
+    .tool { min-width: 78px; height: 46px; display: flex; align-items: center; justify-content: center; gap: 7px; background: #202d27; border: 1px solid #39473e; cursor: pointer; }
+    .tool[aria-pressed="true"] { border-color: var(--lime); box-shadow: inset 0 -2px var(--lime); background: #2a382e; }
+    .tool:disabled { opacity: .38; }
+    .tool-icon { width: 25px; height: 25px; background: transparent; border: 0; image-rendering: pixelated; }
+    .tool[data-tool="pick"], .tool[data-tool="fuse"] { min-width: 88px; }
+    .tool-label { font-size: 10px; font-weight: 900; text-transform: uppercase; }
+    .tool-count { color: var(--muted); font-size: 9px; }
+    .controls-hint { color: var(--muted); font-size: 10px; text-align: right; line-height: 1.6; white-space: nowrap; }
+    kbd { padding: 2px 4px; border: 1px solid #445248; background: #131b17; color: #dbe5d8; font: 700 9px "Trebuchet MS", sans-serif; }
+    @media (min-width: 1200px) {
+      .app { height: 100vh; height: 100dvh; }
+      .world-frame, #game-canvas { min-height: 0; }
+    }
+    @media (max-width: 860px) {
+      .app { padding: 12px; gap: 10px; }
+      .layout { grid-template-columns: minmax(0, 1fr) 230px; gap: 10px; }
+      .rail { gap: 8px; }
+      .panel { padding: 10px; }
+      .controls-hint { display: none; }
+      .bottom { flex-wrap: wrap; }
+      .tool-list { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    }
+    @media (max-width: 650px) {
+      .app { padding: 10px 9px 14px; }
+      .topbar { gap: 9px; min-height: 54px; padding-bottom: 10px; }
+      .topbar { flex-wrap: wrap; }
+      .top-spacer { display: none; }
+      .craft-open { margin-left: 0; }
+      .brand-gem { width: 30px; height: 30px; }
+      h1 { font-size: 19px; }
+      .eyebrow { font-size: 8px; }
+      .top-stat { min-width: 55px; padding-left: 8px; }
+      .stat-label { font-size: 8px; }
+      .stat-value { font-size: 14px; }
+      .health-stat { min-width: 104px; }
+      .health-track { width: 48px; }
+      .layout { display: flex; flex-direction: column; }
+      .play-column { min-height: 0; }
+      .world-frame { min-height: 54svh; }
+      #game-canvas { min-height: 54svh; }
+      .rail { display: grid; grid-template-columns: 1fr 1fr; }
+      .map-panel { grid-column: 1 / -1; }
+      #minimap { height: 84px; }
+      .bottom { flex-wrap: wrap; gap: 8px; padding: 8px; }
+      .tool-caption { width: 100%; display: flex; justify-content: space-between; align-items: center; }
+      .tool-caption strong { margin-top: 0; }
+      .tool-list { gap: 5px; grid-template-columns: repeat(4, minmax(0, 1fr)); width: 100%; }
+      .tool { min-width: 0; height: 42px; flex: 1; gap: 4px; flex-direction: column; }
+      .tool[data-tool="pick"], .tool[data-tool="fuse"] { min-width: 0; }
+      .tool-icon { width: 10px; height: 10px; }
+      .tool-label { font-size: 8px; }
+      .tool-count { font-size: 8px; }
+      .crafting-inner { padding: 13px; }
+      .crafting-content { grid-template-columns: 1fr; }
+      .crafting-note { grid-column: auto; }
+      .loadout-slots { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .loadout-items { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+      .box-item { min-height: 62px; }
+      .touch-pad { display: grid; grid-template-columns: repeat(3, 38px); grid-template-rows: repeat(2, 32px); gap: 3px; margin-left: auto; }
+      .touch-pad button { border: 1px solid #435249; background: #202d27; font-size: 12px; touch-action: none; }
+      .touch-pad [data-dir="up"] { grid-column: 2; }
+      .touch-pad [data-dir="left"] { grid-column: 1; grid-row: 2; }
+      .touch-pad [data-dir="down"] { grid-column: 2; grid-row: 2; }
+      .touch-pad [data-dir="right"] { grid-column: 3; grid-row: 2; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <div class="brand-gem" aria-hidden="true"></div>
+      <div class="brand-copy"><p class="eyebrow">Deepwell / infinite survival</p><h1>Infinity</h1></div>
+      <div class="top-spacer"></div>
+      <button class="craft-open" id="open-crafting" title="Open crafting box (Escape)">Crafting box <kbd>Esc</kbd></button>
+      <button class="craft-open" id="open-loadout" title="Choose bottom-bar materials (Q)">Hotbar <kbd>Q</kbd></button>
+      <div class="top-stat"><span class="stat-label">Depth</span><strong class="stat-value" id="level-value">01</strong></div>
+      <div class="top-stat"><span class="stat-label">Hunters</span><strong class="stat-value" id="enemy-value">00</strong></div>
+      <div class="top-stat"><span class="stat-label">Creepers</span><strong class="stat-value" id="creeper-value">000</strong></div>
+      <div class="top-stat health-stat"><span class="stat-label">Vital signs</span><div class="health-line"><div class="health-track"><div class="health-fill" id="health-fill"></div></div><strong class="stat-value" id="health-value">100</strong></div></div>
+    </header>
+    <main class="layout">
+      <section class="play-column" aria-label="Game field">
+        <div class="world-frame" id="world-frame">
+          <canvas id="game-canvas" aria-label="Mine, build, and survive in the Deepwell"></canvas>
+          <div class="world-topline"><div class="world-tag">Sector <strong id="sector-value">C-01</strong></div><div class="world-tag">Threat <strong id="threat-value">LOW</strong></div></div>
+          <div class="toast" id="toast" role="status"></div>
+          <div class="game-over" id="game-over" hidden><div class="over-panel"><p class="eyebrow">Run ended</p><h2>Lost Below</h2><p id="score-copy">You made it to depth 01.</p><button class="primary-button" id="restart-button">Start another run</button></div></div>
+        </div>
+      </section>
+      <aside class="rail" aria-label="Run dashboard">
+        <section class="panel map-panel"><h2 class="panel-heading">Mine map <small>LIVE PING</small></h2><canvas id="minimap" aria-label="Map showing your position, coins, and hunters"></canvas><div class="map-legend"><span><i class="legend-dot"></i>You</span><span><i class="legend-dot enemy"></i>Hunters</span><span><i class="legend-dot" style="background:#edbd58"></i>Coins</span></div></section>
+        <section class="panel"><h2 class="panel-heading">Material bag <small>ON HAND</small></h2><div class="inventory-list" id="inventory-list"></div></section>
+        <section class="panel"><h2 class="panel-heading">Supply counter <small><span id="coin-value">0</span> COINS</small></h2><div class="shop-list" id="shop-list">
+          <button class="shop-item" data-buy="dirt" data-cost="3"><span class="shop-name">Dirt cube</span><span class="shop-cost">3 ◉</span></button>
+          <button class="shop-item" data-buy="stone" data-cost="6"><span class="shop-name">Stone cube</span><span class="shop-cost">6 ◉</span></button>
+          <button class="shop-item" data-buy="crystal" data-cost="10"><span class="shop-name">Crystal cube</span><span class="shop-cost">10 ◉</span></button>
+        </div></section>
+        <section class="panel"><h2 class="panel-heading">Field recipes <small>PLACE + FUSE</small></h2><div class="recipes">
+          <div class="recipe"><span class="recipe-mark">2+1</span><div><strong>Stone + crystal</strong>Surround to form a sentry</div></div>
+          <div class="recipe"><span class="recipe-mark">2+1</span><div><strong>Dirt + stone</strong>Surround to form a reinforced cube</div></div>
+          <div class="recipe"><span class="recipe-mark">100×</span><div><strong>Infinity wand</strong>Feed it any mineable block to copy its material</div></div>
+        </div></section>
+        <section class="panel"><h2 class="panel-heading">Infinity wand <small>FORGE RECIPE</small></h2>
+          <div class="forge-costs">
+            <span><b data-requirement="gold">0 / 11</b>Gold</span><span><b data-requirement="diamond">0 / 20</b>Diamond</span>
+            <span><b data-requirement="sticks">0 / 10</b>Sticks</span><span><b data-requirement="creepers">0 / 300</b>Creepers</span>
+          </div>
+          <button class="shop-item forge-button" id="craft-wand"><span class="shop-name">Forge the wand</span><span class="shop-cost">LOCKED</span></button>
+        </section>
+      </aside>
+    </main>
+    <footer class="bottom">
+      <div class="tool-caption"><span>Selected tool</span><strong id="active-tool">Pickaxe</strong></div>
+      <div class="tool-list" id="tool-list" aria-label="Quick access bar"></div>
+      <div class="touch-pad" aria-label="Movement controls"><button data-dir="up" aria-label="Move up">▲</button><button data-dir="left" aria-label="Move left">◀</button><button data-dir="down" aria-label="Move down">▼</button><button data-dir="right" aria-label="Move right">▶</button></div>
+      <div class="controls-hint"><kbd>WASD</kbd> move &nbsp; <kbd>SPACE</kbd> strike<br><kbd>ESC</kbd> crafting &nbsp; <kbd>Q</kbd> hotbar</div>
+    </footer>
+  </div>
+  <dialog class="crafting-modal" id="crafting-box" aria-labelledby="crafting-title">
+    <div class="crafting-inner">
+      <header class="crafting-head"><div class="brand-gem" aria-hidden="true"></div><div><p class="eyebrow">Inventory / workbench</p><h2 id="crafting-title">Crafting box</h2></div><div class="top-spacer"></div><button class="close-crafting" id="close-crafting" aria-label="Close crafting box">×</button></header>
+      <div class="crafting-content">
+        <section class="crafting-section"><h3>Everything you carry</h3><div class="box-grid" id="box-inventory"></div></section>
+        <section class="crafting-section"><h3>Workbench recipes</h3><div class="craft-recipe-list">
+          <div class="craft-recipe"><div class="craft-recipe-title"><span>Stone sword</span><span>⚔</span></div><p>2 stone + 1 stick. A real close-range weapon.</p><button class="craft-action" data-craft="sword">Craft sword</button></div>
+          <div class="craft-recipe"><div class="craft-recipe-title"><span>Infinity wand</span><span>100×</span></div><p>11 gold + 20 diamonds + 10 sticks + 300 creepers.</p><button class="craft-action" data-craft="wand">Craft wand</button></div>
+          <div class="craft-recipe"><div class="craft-recipe-title"><span>Infinity monster</span><span>Boss</span></div><p>50 crystal + 300 creeper defeats. Summons the final hunter.</p><button class="craft-action" data-craft="boss">Summon monster</button></div>
+        </div></section>
+        <p class="crafting-note">Creepers glow and swell before exploding. The Infinity monster appears on your mine map after the summon ritual.</p>
+      </div>
+    </div>
+  </dialog>
+  <dialog class="crafting-modal" id="loadout-box" aria-labelledby="loadout-title">
+    <div class="crafting-inner">
+      <header class="crafting-head"><div class="brand-gem" aria-hidden="true"></div><div><p class="eyebrow">Quick access / equipment</p><h2 id="loadout-title">Hotbar loadout</h2></div><div class="top-spacer"></div><button class="close-crafting" id="close-loadout" aria-label="Close hotbar loadout">×</button></header>
+      <div class="crafting-content">
+        <section class="crafting-section"><h3>Bottom bar · six slots</h3><div class="loadout-slots" id="loadout-slots"></div></section>
+        <section class="crafting-section"><h3>Carried materials & tools</h3><div class="loadout-items" id="loadout-items"></div></section>
+        <p class="crafting-note">Select an item, then a numbered slot. Press 1–6 to use it. Esc closes this page.</p>
+      </div>
+    </div>
+  </dialog>
+  <script src="index.js"></script>
+</body>
 </html>
-
