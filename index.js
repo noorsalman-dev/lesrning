@@ -3,9 +3,42 @@
 
 
 const vv = {
-  items: {},
-  recipes: {}
+    items: {
+        1: { id: 1, name: "crystal" },
+        0: { id: 0, name: "gold" },
+        4: { id: 4, name: "stone" },
+        7: { id: 7, name: "dirt" },
+        8: { id: 8, name: "diamond" },
+        10: { id: 10, name: "sticks" },
+        101: { id: 101, name: "stone_sword" },
+        102: { id: 102, name: "auto_turret" },
+        103: { id: 103, name: "generator" }
+    },
+    recipes: {
+        // 101 = Stone Sword recipe output
+        101: [
+            {
+                result: { id: 101, count: 1 },
+                ingredients: [4, 4, 10] // 2 stone + 1 stick
+            }
+        ],
+        // 102 = Auto Turret recipe output
+        102: [
+            {
+                result: { id: 102, count: 1 },
+                ingredients: [4, 4, 4, 1, 1] // 3 stone + 2 crystal
+            }
+        ],
+        // 103 = Generator recipe output
+        103: [
+            {
+                result: { id: 103, count: 1 },
+                ingredients: [4, 4, 0, 10, 10] // 2 stone + 1 gold + 2 sticks
+            }
+        ]
+    }
 };
+
 const TILE = 40;
 const MAP_WIDTH = 64;
 const MAP_HEIGHT = 44;
@@ -973,7 +1006,6 @@ class GameManager {
     this.updateHud(true);
     this.loadMinecraftRecipeBook();
   }
-
   getItemInfo(name) {
     const known = RESOURCE_NAMES[name];
     if (known) return known;
@@ -1051,10 +1083,12 @@ class GameManager {
     });
   }
 
+// Lines 520 - 523 in your index.js file
   async loadMinecraftRecipeBook() {
     const status = document.querySelector("#recipe-book-status");
     try {
       const dataRoot = "node_modules/minecraft-data/minecraft-data/data/pc/1.21.4/";  
+
       //thguguvftyjvcsrtszgvkoklloflrldrk
       const [itemResponse, recipeResponse] = await Promise.all([
         fetch(`${dataRoot}items.json`),
