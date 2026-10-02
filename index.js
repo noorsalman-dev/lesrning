@@ -194,7 +194,7 @@ class MapManager {
     for (let y = startY; y < endY; y++) {
       for (let x = startX; x < endX; x++) {
         const left = x * TILE;
-        const top = y * TILE;
+    fetch("./recipes.json")    const top = y * TILE;
         context.fillStyle = ((x * 13 + y * 7) % 5 === 0) ? "#1c2520" : "#19211d";
         context.fillRect(left, top, TILE, TILE);
         if ((x * 17 + y * 11) % 7 === 0) {
@@ -1047,7 +1047,7 @@ class GameManager {
   async loadMinecraftRecipeBook() {
     const status = document.querySelector("#recipe-book-status");
     try {
-      const dataRoot = "node_modules/minecraft-data/minecraft-data/data/pc/1.21.4/";
+      const dataRoot = "node_modules/minecraft-data/data/pc/1.21.4/";
       const [itemResponse, recipeResponse] = await Promise.all([
         fetch(`${dataRoot}items.json`),
         fetch(`${dataRoot}recipes.json`),
