@@ -63,20 +63,61 @@
     .crafting-head .top-spacer { display: block; }
     .close-crafting { width: 34px; height: 34px; border: 1px solid var(--line); background: var(--panel-2); color: var(--ink); font-size: 21px; cursor: pointer; }
     .crafting-content { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; padding-top: 16px; }
+    .crafting-section.wide { grid-column: 1 / -1; }
+    .crafting-workbench { display: grid; grid-template-columns: minmax(0, 1fr) 82px; gap: 12px; align-items: center; }
+    .craft-grid { display: grid; grid-template-columns: repeat(3, minmax(46px, 66px)); grid-template-rows: repeat(3, 56px); gap: 5px; }
+    .craft-slot { position: relative; display: grid; place-items: center; padding: 5px; border: 1px solid #52604d; background: #26332b; cursor: pointer; }
+    .craft-slot:hover { border-color: var(--lime); background: #304033; }
+    .craft-slot.has-item { background: #304033; }
+    .craft-slot-swatch { width: 25px; height: 25px; background: var(--swatch); border: 1px solid #ffffff72; box-shadow: inset 0 4px #ffffff25, 1px 2px 2px #0008; transform: rotate(-5deg); }
+    .craft-slot-count { position: absolute; right: 4px; bottom: 2px; color: #fff; font-size: 10px; font-weight: 900; text-shadow: 0 1px 3px #000; }
+    .craft-arrow { color: var(--muted); text-align: center; font-size: 22px; }
+    .craft-output { min-height: 66px; display: grid; place-items: center; position: relative; border: 1px solid #67735d; background: #30392b; cursor: pointer; }
+    .craft-output:disabled { opacity: .42; cursor: not-allowed; }
+    .craft-output .craft-slot-swatch { width: 32px; height: 32px; }
+    .craft-output .craft-slot-count { right: 5px; bottom: 4px; }
+    .craft-instructions { margin: 8px 0 0; color: var(--muted); font-size: 10px; }
     .crafting-section h3 { margin: 0 0 9px; color: var(--muted); font-size: 10px; text-transform: uppercase; letter-spacing: 1px; }
     .box-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 7px; }
-    .box-item { min-height: 74px; padding: 8px; display: flex; flex-direction: column; justify-content: space-between; background: #202b25; border: 1px solid #354239; }
+    .box-item { min-height: 74px; padding: 8px; display: flex; flex-direction: column; justify-content: space-between; text-align: left; color: var(--ink); background: #202b25; border: 1px solid #354239; cursor: pointer; }
+    .box-item:hover:not(:disabled), .box-item.selected { border-color: var(--lime); background: #2a382e; }
+    .box-item:disabled { opacity: .38; cursor: not-allowed; }
     .box-item-top { display: flex; align-items: center; gap: 7px; color: #bdc8bc; font-size: 10px; text-transform: uppercase; font-weight: 800; }
     .box-item-swatch { width: 13px; height: 13px; flex: 0 0 auto; background: var(--swatch); border: 1px solid #ffffff60; }
     .box-item-count { align-self: flex-end; color: var(--ink); font: 700 20px/1 var(--display); }
     .craft-recipe-list { display: grid; gap: 7px; }
     .craft-recipe { padding: 10px; background: #202b25; border: 1px solid #354239; }
+    .recipe-search { width: 100%; min-height: 34px; margin: 0 0 8px; padding: 0 9px; border: 1px solid #455348; background: #111815; color: var(--ink); font: inherit; font-size: 11px; }
+    .recipe-book-status { margin: 0 0 7px; color: var(--muted); font-size: 9px; }
+    .minecraft-recipe-list { display: grid; gap: 5px; max-height: 345px; overflow: auto; padding-right: 3px; }
+    .minecraft-recipe { display: grid; grid-template-columns: 54px minmax(0, 1fr) auto; align-items: center; gap: 8px; width: 100%; min-height: 60px; padding: 6px; text-align: left; background: #202b25; border: 1px solid #354239; cursor: pointer; }
+    .minecraft-recipe:hover { border-color: var(--lime); background: #29372f; }
+    .recipe-pattern { display: grid; grid-template-columns: repeat(3, 15px); grid-template-rows: repeat(3, 15px); gap: 2px; }
+    .recipe-cell { background: #121916; border: 1px solid #354239; }
+    .recipe-cell.filled { background: var(--swatch); border-color: #ffffff72; box-shadow: inset 0 3px #ffffff25; }
+    .recipe-output { color: var(--lime); font-size: 9px; font-weight: 900; text-transform: uppercase; }
+    .recipe-name { min-width: 0; overflow: hidden; color: var(--ink); font-size: 10px; font-weight: 800; text-overflow: ellipsis; text-transform: uppercase; white-space: nowrap; }
+    .recipe-count { color: var(--muted); font-size: 9px; }
     .craft-recipe-title { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 4px; font: 700 13px/1 var(--display); text-transform: uppercase; }
     .craft-recipe p { min-height: 25px; margin: 0 0 8px; color: var(--muted); font-size: 10px; line-height: 1.35; }
     .craft-action { width: 100%; min-height: 31px; border: 1px solid #56654f; background: #29382e; color: var(--lime); font-size: 9px; font-weight: 900; text-transform: uppercase; cursor: pointer; }
     .craft-action:hover:not(:disabled) { background: #344731; }
     .craft-action:disabled { opacity: .42; cursor: not-allowed; }
     .crafting-note { grid-column: 1 / -1; margin: 0; color: #94a296; font-size: 10px; line-height: 1.5; }
+    .ingredient-tray { margin-top: 16px; padding: 12px; background: #111815; border: 1px solid #4a594d; }
+    .tray-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 9px; }
+    .tray-head h3 { margin: 0; color: var(--muted); font-size: 10px; text-transform: uppercase; letter-spacing: 1px; }
+    .tray-head span { color: var(--lime); font-size: 10px; font-weight: 800; }
+    .ingredient-list { min-height: 54px; display: flex; align-items: center; flex-wrap: wrap; gap: 6px; }
+    .ingredient-empty { color: #77857a; font-size: 11px; }
+    .ingredient-chip { min-height: 32px; display: flex; align-items: center; gap: 7px; padding: 5px 8px; background: #25322a; border: 1px solid #445146; color: #d7e0d5; font-size: 10px; font-weight: 800; text-transform: uppercase; cursor: pointer; }
+    .ingredient-chip:hover { border-color: var(--danger); }
+    .ingredient-chip i { width: 10px; height: 10px; background: var(--swatch); border: 1px solid #ffffff66; }
+    .ingredient-chip b { color: var(--lime); }
+    .tray-actions { display: flex; justify-content: flex-end; gap: 7px; margin-top: 9px; }
+    .tray-button { min-height: 34px; border: 1px solid #4a594d; background: #202b25; padding: 0 12px; color: var(--muted); font-size: 10px; font-weight: 900; text-transform: uppercase; cursor: pointer; }
+    .tray-button.primary { background: var(--lime); border-color: var(--lime); color: #192016; }
+    .tray-button:disabled { opacity: .35; cursor: not-allowed; }
     .touch-pad { display: none; }
     .rail { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
     .panel { border: 1px solid var(--line); background: var(--panel); padding: 13px; }
@@ -107,32 +148,25 @@
     .forge-costs .requirement-met { color: var(--mint); }
     .forge-button { min-height: 34px; }
     .forge-button:disabled { opacity: .55; }
-    .loadout-slots { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 7px; }
-    .loadout-slot { min-height: 76px; padding: 8px; display: flex; align-items: center; gap: 8px; background: #202b25; border: 1px solid #56604e; color: var(--ink); text-align: left; cursor: pointer; }
-    .loadout-slot:hover, .loadout-slot.is-selected { border-color: var(--lime); background: #2d392e; }
-    .loadout-slot:disabled { opacity: .45; cursor: not-allowed; }
-    .loadout-slot canvas, .loadout-item canvas { width: 32px; height: 32px; flex: 0 0 auto; }
-    .loadout-slot-copy { display: grid; gap: 4px; min-width: 0; }
-    .loadout-slot-copy small { color: var(--muted); font-size: 9px; text-transform: uppercase; }
-    .loadout-slot-copy strong { overflow: hidden; font-size: 10px; text-overflow: ellipsis; text-transform: uppercase; }
-    .loadout-items { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 7px; }
-    .loadout-item { min-height: 72px; display: grid; justify-items: center; align-content: center; gap: 4px; background: #202b25; border: 1px solid #354239; color: var(--ink); cursor: pointer; }
-    .loadout-item:hover, .loadout-item.is-selected { border-color: var(--lime); background: #2d392e; }
-    .loadout-item:disabled { opacity: .4; cursor: not-allowed; }
-    .loadout-item span { max-width: 100%; overflow: hidden; color: #c6d0c5; font-size: 9px; text-overflow: ellipsis; text-transform: uppercase; }
-    .loadout-item strong { color: var(--lime); font: 700 12px/1 var(--display); }
     .bottom { display: flex; align-items: center; gap: 14px; min-height: 68px; padding: 9px 12px; border: 1px solid var(--line); background: var(--panel); }
     .tool-caption { width: 83px; flex: 0 0 auto; }
     .tool-caption span { display: block; color: var(--muted); font-size: 9px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; }
     .tool-caption strong { display: block; margin-top: 4px; color: var(--lime); font: 700 13px/1 var(--display); text-transform: uppercase; }
     .tool-list { display: flex; gap: 7px; flex: 1; min-width: 0; }
+    .hotbar-slots { display: flex; gap: 5px; flex: 1; min-width: 0; overflow-x: auto; scrollbar-width: thin; scrollbar-color: #52604d #17201b; }
     .tool { min-width: 78px; height: 46px; display: flex; align-items: center; justify-content: center; gap: 7px; background: #202d27; border: 1px solid #39473e; cursor: pointer; }
     .tool[aria-pressed="true"] { border-color: var(--lime); box-shadow: inset 0 -2px var(--lime); background: #2a382e; }
     .tool:disabled { opacity: .38; }
-    .tool-icon { width: 25px; height: 25px; background: transparent; border: 0; image-rendering: pixelated; }
+    .tool-icon { width: 13px; height: 13px; background: var(--swatch, #e3e9dd); border: 1px solid #ffffff76; transform: rotate(45deg); }
     .tool[data-tool="pick"], .tool[data-tool="fuse"] { min-width: 88px; }
     .tool-label { font-size: 10px; font-weight: 900; text-transform: uppercase; }
     .tool-count { color: var(--muted); font-size: 9px; }
+    .hotbar-slot { position: relative; width: 52px; height: 52px; flex: 0 0 52px; display: grid; place-items: center; background: #1a241f; border: 1px solid #465449; cursor: pointer; }
+    .hotbar-slot:hover:not(:disabled), .hotbar-slot[aria-pressed="true"] { border: 2px solid var(--lime); background: #29372f; }
+    .hotbar-slot:disabled { opacity: .34; cursor: not-allowed; }
+    .hotbar-swatch { width: 24px; height: 24px; background: var(--swatch); border: 1px solid #ffffff70; box-shadow: inset 0 5px #ffffff25, 1px 3px 3px #0009; transform: rotate(-5deg); }
+    .hotbar-amount { position: absolute; right: 4px; bottom: 2px; color: #fff; font-size: 10px; font-weight: 900; text-shadow: 0 1px 3px #000; }
+    .hotbar-key { position: absolute; top: 2px; left: 3px; color: #9cac9e; font-size: 8px; }
     .controls-hint { color: var(--muted); font-size: 10px; text-align: right; line-height: 1.6; white-space: nowrap; }
     kbd { padding: 2px 4px; border: 1px solid #445248; background: #131b17; color: #dbe5d8; font: 700 9px "Trebuchet MS", sans-serif; }
     @media (min-width: 1200px) {
@@ -145,15 +179,13 @@
       .rail { gap: 8px; }
       .panel { padding: 10px; }
       .controls-hint { display: none; }
-      .bottom { flex-wrap: wrap; }
-      .tool-list { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); }
     }
     @media (max-width: 650px) {
       .app { padding: 10px 9px 14px; }
       .topbar { gap: 9px; min-height: 54px; padding-bottom: 10px; }
       .topbar { flex-wrap: wrap; }
       .top-spacer { display: none; }
-      .craft-open { margin-left: 0; }
+      .craft-open { margin-left: auto; }
       .brand-gem { width: 30px; height: 30px; }
       h1 { font-size: 19px; }
       .eyebrow { font-size: 8px; }
@@ -172,7 +204,9 @@
       .bottom { flex-wrap: wrap; gap: 8px; padding: 8px; }
       .tool-caption { width: 100%; display: flex; justify-content: space-between; align-items: center; }
       .tool-caption strong { margin-top: 0; }
-      .tool-list { gap: 5px; grid-template-columns: repeat(4, minmax(0, 1fr)); width: 100%; }
+      .tool-list { gap: 5px; }
+      .hotbar-slot { width: 44px; height: 44px; flex-basis: 44px; }
+      .hotbar-swatch { width: 20px; height: 20px; }
       .tool { min-width: 0; height: 42px; flex: 1; gap: 4px; flex-direction: column; }
       .tool[data-tool="pick"], .tool[data-tool="fuse"] { min-width: 0; }
       .tool-icon { width: 10px; height: 10px; }
@@ -181,8 +215,6 @@
       .crafting-inner { padding: 13px; }
       .crafting-content { grid-template-columns: 1fr; }
       .crafting-note { grid-column: auto; }
-      .loadout-slots { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-      .loadout-items { grid-template-columns: repeat(3, minmax(0, 1fr)); }
       .box-item { min-height: 62px; }
       .touch-pad { display: grid; grid-template-columns: repeat(3, 38px); grid-template-rows: repeat(2, 32px); gap: 3px; margin-left: auto; }
       .touch-pad button { border: 1px solid #435249; background: #202d27; font-size: 12px; touch-action: none; }
@@ -199,8 +231,7 @@
       <div class="brand-gem" aria-hidden="true"></div>
       <div class="brand-copy"><p class="eyebrow">Deepwell / infinite survival</p><h1>Infinity</h1></div>
       <div class="top-spacer"></div>
-      <button class="craft-open" id="open-crafting" title="Open crafting box (Escape)">Crafting box <kbd>Esc</kbd></button>
-      <button class="craft-open" id="open-loadout" title="Choose bottom-bar materials (Q)">Hotbar <kbd>Q</kbd></button>
+      <button class="craft-open" id="open-crafting" title="Open inventory and crafting (C)">Crafting box <kbd>C</kbd></button>
       <div class="top-stat"><span class="stat-label">Depth</span><strong class="stat-value" id="level-value">01</strong></div>
       <div class="top-stat"><span class="stat-label">Hunters</span><strong class="stat-value" id="enemy-value">00</strong></div>
       <div class="top-stat"><span class="stat-label">Creepers</span><strong class="stat-value" id="creeper-value">000</strong></div>
@@ -238,10 +269,10 @@
       </aside>
     </main>
     <footer class="bottom">
-      <div class="tool-caption"><span>Selected tool</span><strong id="active-tool">Pickaxe</strong></div>
-      <div class="tool-list" id="tool-list" aria-label="Quick access bar"></div>
+      <div class="tool-caption"><span>Inventory / select to place</span><strong id="active-tool">Pickaxe</strong></div>
+      <div class="tool-list"><button class="tool" data-tool="pick" aria-pressed="true" title="Mine nearby blocks"><span class="tool-icon" style="--swatch:#c9d5c8"></span><span class="tool-label">Mine</span><span class="tool-count">1</span></button><div class="hotbar-slots" id="inventory-hotbar" aria-label="Placeable items"></div><button class="tool" data-tool="fuse" aria-pressed="false" title="Fuse nearby placed blocks"><span class="tool-icon" style="--swatch:#d1ed69"></span><span class="tool-label">Fuse</span><span class="tool-count">F</span></button><button class="tool" data-tool="sword" aria-pressed="false" title="Strike nearby enemies with your sword" disabled><span class="tool-icon" style="--swatch:#d9e0df"></span><span class="tool-label">Sword</span><span class="tool-count">SPACE</span></button><button class="tool" data-tool="wand" aria-pressed="false" title="Consume one nearby block and receive 100 of its material" disabled><span class="tool-icon" style="--swatch:#f2ce70"></span><span class="tool-label">Wand</span><span class="tool-count">100×</span></button></div>
       <div class="touch-pad" aria-label="Movement controls"><button data-dir="up" aria-label="Move up">▲</button><button data-dir="left" aria-label="Move left">◀</button><button data-dir="down" aria-label="Move down">▼</button><button data-dir="right" aria-label="Move right">▶</button></div>
-      <div class="controls-hint"><kbd>WASD</kbd> move &nbsp; <kbd>SPACE</kbd> strike<br><kbd>ESC</kbd> crafting &nbsp; <kbd>Q</kbd> hotbar</div>
+      <div class="controls-hint"><kbd>WASD</kbd> move &nbsp; <kbd>SPACE</kbd> strike<br><kbd>1-5</kbd> place &nbsp; <kbd>Q</kbd> mine &nbsp; <kbd>C</kbd> craft</div>
     </footer>
   </div>
   <dialog class="crafting-modal" id="crafting-box" aria-labelledby="crafting-title">
@@ -249,23 +280,25 @@
       <header class="crafting-head"><div class="brand-gem" aria-hidden="true"></div><div><p class="eyebrow">Inventory / workbench</p><h2 id="crafting-title">Crafting box</h2></div><div class="top-spacer"></div><button class="close-crafting" id="close-crafting" aria-label="Close crafting box">×</button></header>
       <div class="crafting-content">
         <section class="crafting-section"><h3>Everything you carry</h3><div class="box-grid" id="box-inventory"></div></section>
-        <section class="crafting-section"><h3>Workbench recipes</h3><div class="craft-recipe-list">
-          <div class="craft-recipe"><div class="craft-recipe-title"><span>Stone sword</span><span>⚔</span></div><p>2 stone + 1 stick. A real close-range weapon.</p><button class="craft-action" data-craft="sword">Craft sword</button></div>
-          <div class="craft-recipe"><div class="craft-recipe-title"><span>Infinity wand</span><span>100×</span></div><p>11 gold + 20 diamonds + 10 sticks + 300 creepers.</p><button class="craft-action" data-craft="wand">Craft wand</button></div>
-          <div class="craft-recipe"><div class="craft-recipe-title"><span>Infinity monster</span><span>Boss</span></div><p>50 crystal + 300 creeper defeats. Summons the final hunter.</p><button class="craft-action" data-craft="boss">Summon monster</button></div>
+        <section class="crafting-section"><h3>Minecraft recipe book <small id="recipe-count">Loading</small></h3><input class="recipe-search" id="recipe-search" type="search" placeholder="Search 1.21.4 recipes" aria-label="Search Minecraft recipes"><p class="recipe-book-status" id="recipe-book-status">Loading local recipe catalog…</p><div class="minecraft-recipe-list" id="minecraft-recipe-list"></div></section>
+        <section class="crafting-section"><h3>Infinity recipes</h3><div class="craft-recipe-list">
+          <div class="craft-recipe"><div class="craft-recipe-title"><span>Stone sword</span><span>⚔</span></div><p>Place 2 stone vertically above 1 stick.</p><button class="craft-action" data-fill="sword">Load ingredients</button></div>
+          <div class="craft-recipe"><div class="craft-recipe-title"><span>Auto turret</span><span>DEFENSE</span></div><p>3 stone + 2 crystal. Place it and it automatically attacks nearby monsters.</p><button class="craft-action" data-fill="turret">Load ingredients</button></div>
+          <div class="craft-recipe"><div class="craft-recipe-title"><span>Generator</span><span>SUPPORT</span></div><p>2 stone + 1 gold + 2 sticks. Powers nearby turrets for faster attacks.</p><button class="craft-action" data-fill="generator">Load ingredients</button></div>
+          <div class="craft-recipe"><div class="craft-recipe-title"><span>Infinity wand</span><span>100×</span></div><p>11 gold + 20 diamonds + 10 sticks + 300 creeper essence.</p><button class="craft-action" data-fill="wand">Load ingredients</button></div>
+          <div class="craft-recipe"><div class="craft-recipe-title"><span>Infinity monster</span><span>Boss</span></div><p>50 crystal + 300 creeper essence. Summons the final hunter.</p><button class="craft-action" data-fill="boss">Load ingredients</button></div>
         </div></section>
-        <p class="crafting-note">Creepers glow and swell before exploding. The Infinity monster appears on your mine map after the summon ritual.</p>
       </div>
-    </div>
-  </dialog>
-  <dialog class="crafting-modal" id="loadout-box" aria-labelledby="loadout-title">
-    <div class="crafting-inner">
-      <header class="crafting-head"><div class="brand-gem" aria-hidden="true"></div><div><p class="eyebrow">Quick access / equipment</p><h2 id="loadout-title">Hotbar loadout</h2></div><div class="top-spacer"></div><button class="close-crafting" id="close-loadout" aria-label="Close hotbar loadout">×</button></header>
-      <div class="crafting-content">
-        <section class="crafting-section"><h3>Bottom bar · six slots</h3><div class="loadout-slots" id="loadout-slots"></div></section>
-        <section class="crafting-section"><h3>Carried materials & tools</h3><div class="loadout-items" id="loadout-items"></div></section>
-        <p class="crafting-note">Select an item, then a numbered slot. Press 1–6 to use it. Esc closes this page.</p>
-      </div>
+      <section class="crafting-section wide"><h3>3 × 3 crafting grid</h3><div class="crafting-workbench"><div class="craft-grid" id="craft-grid" aria-label="Crafting input slots">
+        <button class="craft-slot" data-slot="0" aria-label="Crafting slot 1"></button><button class="craft-slot" data-slot="1" aria-label="Crafting slot 2"></button><button class="craft-slot" data-slot="2" aria-label="Crafting slot 3"></button>
+        <button class="craft-slot" data-slot="3" aria-label="Crafting slot 4"></button><button class="craft-slot" data-slot="4" aria-label="Crafting slot 5"></button><button class="craft-slot" data-slot="5" aria-label="Crafting slot 6"></button>
+        <button class="craft-slot" data-slot="6" aria-label="Crafting slot 7"></button><button class="craft-slot" data-slot="7" aria-label="Crafting slot 8"></button><button class="craft-slot" data-slot="8" aria-label="Crafting slot 9"></button>
+      </div><div class="craft-arrow" aria-hidden="true">→</div><button class="craft-output" id="craft-output" aria-label="Craft recipe output" disabled></button></div><p class="craft-instructions">Select an item, then choose any grid slot. Recipe order does not matter. Click a filled slot to return its items.</p></section>
+      <section class="ingredient-tray" aria-label="Selected crafting ingredients">
+        <div class="tray-head"><h3>Crafting bar</h3><span id="ingredient-summary">0 ingredients</span></div>
+        <div class="ingredient-list" id="ingredient-list"><span class="ingredient-empty">Ingredients in the grid appear here.</span></div>
+        <div class="tray-actions"><button class="tray-button" id="clear-ingredients" disabled>Return all</button><button class="tray-button primary" id="craft-selected" disabled>Craft selected</button></div>
+      </section>
     </div>
   </dialog>
   <script src="index.js"></script>

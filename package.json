@@ -1,0 +1,14 @@
+{
+  "type": "module",
+  "scripts": {
+    "start": "python3 -m http.server 8000"
+  },
+  "dependencies": {
+    "minecraft-data": "^3.117.0",
+    "three": "^0.186.1"
+  },
+  "devDependencies": {
+    "playwright": "^1.63.0",
+    "pngjs": "^7.0.0"
+  }
+}

@@ -10,10 +10,21 @@ const MATERIALS = {
   gold: { name: "Gold", color: "#9a7133", highlight: "#ffda73", health: 2 },
   diamond: { name: "Diamond", color: "#287c83", highlight: "#8bf3f0", health: 3 },
 };
-const RESOURCE_NAMES = { ...MATERIALS, sticks: { name: "Sticks", color: "#c18b5e" }, sword: { name: "Sword", color: "#d9e0df" } };
+const MACHINES = {
+  turret: { name: "Auto turret", color: "#c5db75", recipe: { stone: 3, crystal: 2 } },
+  generator: { name: "Generator", color: "#74c9df", recipe: { stone: 2, gold: 1, sticks: 2 } },
+};
+const RESOURCE_NAMES = { ...MATERIALS, ...Object.fromEntries(Object.entries(MACHINES).map(([key, machine]) => [key, { name: machine.name, color: machine.color }])), sticks: { name: "Sticks", color: "#c18b5e" }, creepers: { name: "Creeper essence", color: "#82c765" }, sword: { name: "Sword", color: "#d9e0df" } };
 const WAND_RECIPE = { gold: 11, diamond: 20, sticks: 10, creepers: 300 };
 const BOSS_RECIPE = { crystal: 50, creepers: 300 };
-const TOOL_NAMES = { pick: "Pickaxe", dirt: "Dirt cube", stone: "Stone cube", crystal: "Crystal cube", fuse: "Fuse", wand: "Infinity wand", sword: "Stone sword" };
+const CRAFT_RECIPES = {
+  wand: WAND_RECIPE,
+  boss: BOSS_RECIPE,
+  turret: MACHINES.turret.recipe,
+  generator: MACHINES.generator.recipe,
+};
+const ITEM_ALIASES = { stick: "sticks", gold_ingot: "gold", stone_sword: "sword", cobblestone: "stone", cobbled_deepslate: "stone" };
+const TOOL_NAMES = { pick: "Pickaxe", dirt: "Dirt cube", stone: "Stone cube", crystal: "Crystal cube", fuse: "Fuse", wand: "Infinity wand", sword: "Stone sword", turret: "Auto turret", generator: "Generator" };
 const DIRECTIONS = [[1, 0], [-1, 0], [0, 1], [0, -1]];
 const canvas = document.querySelector("#game-canvas");
 const ctx = canvas.getContext("2d");
@@ -38,138 +49,12 @@ function distance(ax, ay, bx, by) { return Math.hypot(ax - bx, ay - by); }
 function cellKey(x, y) { return `${x},${y}`; }
 function cellCenter(x, y) { return { x: (x + 0.5) * TILE, y: (y + 0.5) * TILE }; }
 function randInt(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
-
-function drawMaterialIcon(icon, item) {
-  icon.width = 48;
-  icon.height = 48;
-  const context = icon.getContext("2d");
-  context.clearRect(0, 0, 48, 48);
-  if (MATERIALS[item]) {
-    const colors = MATERIALS[item];
-    context.fillStyle = colors.highlight;
-    context.beginPath();
-    context.moveTo(24, 3);
-    context.lineTo(44, 13);
-    context.lineTo(24, 24);
-    context.lineTo(4, 13);
-    context.closePath();
-    context.fill();
-    context.fillStyle = colors.color;
-    context.beginPath();
-    context.moveTo(4, 13);
-    context.lineTo(24, 24);
-    context.lineTo(24, 45);
-    context.lineTo(4, 34);
-    context.closePath();
-    context.fill();
-    context.fillStyle = colors.color;
-    context.globalAlpha = 0.68;
-    context.beginPath();
-    context.moveTo(44, 13);
-    context.lineTo(24, 24);
-    context.lineTo(24, 45);
-    context.lineTo(44, 34);
-    context.closePath();
-    context.fill();
-    context.globalAlpha = 1;
-    context.strokeStyle = "#ffffff60";
-    context.lineWidth = 1;
-    context.strokeRect(4.5, 13.5, 39, 21);
-    if (item === "gold" || item === "diamond" || item === "crystal") {
-      context.fillStyle = item === "gold" ? "#fff0b2" : "#edfffc";
-      context.beginPath();
-      context.moveTo(24, 7);
-      context.lineTo(30, 13);
-      context.lineTo(24, 19);
-      context.lineTo(18, 13);
-      context.closePath();
-      context.fill();
-      context.fillStyle = "#ffffff88";
-      context.fillRect(8, 23, 3, 3);
-      context.fillRect(37, 27, 2, 2);
-    } else {
-      context.fillStyle = "#ffffff55";
-      context.fillRect(9, 22, 3, 2);
-      context.fillRect(34, 28, 4, 2);
-      context.fillRect(16, 35, 2, 2);
-    }
-    return;
-  }
-
-  context.lineCap = "round";
-  if (item === "sword") {
-    context.strokeStyle = "#b88458";
-    context.lineWidth = 5;
-    context.beginPath();
-    context.moveTo(12, 37);
-    context.lineTo(21, 28);
-    context.stroke();
-    context.strokeStyle = "#e0e8e8";
-    context.lineWidth = 7;
-    context.beginPath();
-    context.moveTo(19, 29);
-    context.lineTo(37, 9);
-    context.stroke();
-    context.strokeStyle = "#ffffff";
-    context.lineWidth = 2;
-    context.beginPath();
-    context.moveTo(20, 26);
-    context.lineTo(34, 11);
-    context.stroke();
-    context.strokeStyle = "#d4b469";
-    context.lineWidth = 4;
-    context.beginPath();
-    context.moveTo(15, 24);
-    context.lineTo(25, 34);
-    context.stroke();
-  } else if (item === "wand") {
-    context.strokeStyle = "#b57b42";
-    context.lineWidth = 5;
-    context.beginPath();
-    context.moveTo(12, 39);
-    context.lineTo(34, 10);
-    context.stroke();
-    context.fillStyle = "#fff1ad";
-    context.shadowColor = "#f2ce70";
-    context.shadowBlur = 10;
-    context.beginPath();
-    context.arc(36, 8, 5, 0, Math.PI * 2);
-    context.fill();
-    context.shadowBlur = 0;
-  } else if (item === "sticks") {
-    context.strokeStyle = "#c18b5e";
-    context.lineWidth = 6;
-    context.beginPath();
-    context.moveTo(11, 37);
-    context.lineTo(35, 10);
-    context.moveTo(12, 12);
-    context.lineTo(36, 38);
-    context.stroke();
-  } else if (item === "creepers") {
-    context.fillStyle = "#82c765";
-    context.beginPath();
-    context.roundRect(9, 7, 30, 30, 5);
-    context.fill();
-    context.fillStyle = "#20321f";
-    context.fillRect(15, 15, 6, 7);
-    context.fillRect(27, 15, 6, 7);
-    context.fillRect(19, 23, 10, 8);
-    context.fillRect(15, 28, 5, 9);
-    context.fillRect(28, 28, 5, 9);
-  } else {
-    context.strokeStyle = "#d5ded7";
-    context.lineWidth = 5;
-    context.beginPath();
-    context.moveTo(12, 36);
-    context.lineTo(34, 12);
-    context.stroke();
-    context.strokeStyle = "#a66f45";
-    context.lineWidth = 7;
-    context.beginPath();
-    context.moveTo(19, 28);
-    context.lineTo(34, 12);
-    context.stroke();
-  }
+function normalizeItemName(name) { return ITEM_ALIASES[name] || name; }
+function recipeItemColor(name) {
+  const palette = ["#b97c55", "#8fa39a", "#d2b05e", "#67b6a1", "#c07c72", "#8a9ec1"];
+  let hash = 0;
+  for (const character of name) hash = (hash * 31 + character.charCodeAt(0)) | 0;
+  return palette[Math.abs(hash) % palette.length];
 }
 
 class MapManager {
@@ -266,7 +151,7 @@ class MapManager {
       return { message: "" };
     }
     this.damage.delete(key);
-    const resources = placed?.kind === "sentry" ? { stone: 2, crystal: 1 } : placed?.kind === "reinforced" ? { dirt: 1, stone: 1 } : { [material]: 1 };
+    const resources = placed?.kind === "machine" ? { ...placed.recipe } : placed?.kind === "sentry" ? { stone: 2, crystal: 1 } : placed?.kind === "reinforced" ? { dirt: 1, stone: 1 } : { [material]: 1 };
     if (!placed && terrain === "dirt" && Math.random() < 0.2) resources.sticks = 1;
     if (placed) this.placed.delete(key);
     else this.terrain[y][x] = null;
@@ -291,7 +176,10 @@ class MapManager {
     if (Math.floor(player.x / TILE) === x && Math.floor(player.y / TILE) === y) return "Step aside before placing a cube";
     if (this.isBlockedCell(x, y)) return "That space is occupied";
     if (monsters.some((monster) => distance(monster.x, monster.y, (x + 0.5) * TILE, (y + 0.5) * TILE) < TILE * 0.7)) return "A hunter is in the way";
-    this.placed.set(cellKey(x, y), { kind: "block", material, x, y });
+    const machine = MACHINES[material];
+    this.placed.set(cellKey(x, y), machine
+      ? { kind: "machine", machineType: material, recipe: { ...machine.recipe }, x, y }
+      : { kind: "block", material, x, y });
     return "";
   }
 
@@ -370,7 +258,25 @@ class MapManager {
   }
 
   drawPlaced(context, x, y, placed) {
-    if (placed.kind === "sentry") {
+    if (placed.kind === "machine" && placed.machineType === "generator") {
+      context.fillStyle = "#354744";
+      context.fillRect(x + 5, y + 7, TILE - 10, TILE - 11);
+      context.fillStyle = "#78d6e9";
+      context.fillRect(x + 8, y + 10, TILE - 16, 4);
+      context.fillStyle = "#192d33";
+      context.fillRect(x + 11, y + 17, TILE - 22, 13);
+      context.strokeStyle = "#a8f1fa";
+      context.lineWidth = 2;
+      context.beginPath();
+      context.arc(x + TILE / 2, y + 23, 6, 0, Math.PI * 2);
+      context.stroke();
+      context.fillStyle = "#d7fbff";
+      context.fillRect(x + TILE / 2 - 2, y + 21, 4, 4);
+      context.fillStyle = "#435b5b";
+      context.fillRect(x + 12, y + TILE - 7, TILE - 24, 4);
+      return;
+    }
+    if (placed.kind === "sentry" || (placed.kind === "machine" && placed.machineType === "turret")) {
       context.fillStyle = "#22362e";
       context.fillRect(x + 5, y + 8, TILE - 10, TILE - 13);
       context.fillStyle = "#d1ed69";
@@ -381,6 +287,13 @@ class MapManager {
       context.beginPath();
       context.arc(x + TILE / 2, y + TILE / 2 - 2, 3, 0, Math.PI * 2);
       context.fill();
+      if (placed.powered) {
+        context.strokeStyle = "#81e8f4";
+        context.lineWidth = 2;
+        context.beginPath();
+        context.arc(x + TILE / 2, y + TILE / 2 - 2, 13, 0, Math.PI * 2);
+        context.stroke();
+      }
       context.fillStyle = "#56674f";
       context.fillRect(x + 12, y + TILE - 8, TILE - 24, 5);
       return;
@@ -583,7 +496,10 @@ class MonsterManager {
       if (monster.hp <= 0) {
         this.game.coinsManager.drop(monster.x, monster.y, monster.type === "infinity" ? 80 : randInt(2, 4));
         this.game.kills += 1;
-        if (monster.type === "creeper") this.game.creepers += 1;
+        if (monster.type === "creeper") {
+          this.game.creepers += 1;
+          this.game.inventory.creepers += 1;
+        }
         if (monster.type === "infinity") this.game.infinityActive = false;
         this.game.burst(monster.x, monster.y, monster.color, 16);
         this.monsters.splice(index, 1);
@@ -762,9 +678,6 @@ class CraftingManager {
 
   craftSword() {
     if (this.game.inventory.sword) { this.game.toast("You already have a stone sword"); return; }
-    if (this.game.inventory.stone < 2 || this.game.inventory.sticks < 1) { this.game.toast("A sword needs 2 stone and 1 stick"); return; }
-    this.game.inventory.stone -= 2;
-    this.game.inventory.sticks -= 1;
     this.game.inventory.sword = 1;
     this.game.updateHud(true);
     this.game.selectTool("sword");
@@ -773,15 +686,6 @@ class CraftingManager {
 
   craftWand() {
     if (this.game.hasWand) { this.game.toast("The Infinity wand is already forged"); return; }
-    const missing = Object.entries(WAND_RECIPE).filter(([resource, required]) => {
-      const available = resource === "creepers" ? this.game.creepers : this.game.inventory[resource] || 0;
-      return available < required;
-    });
-    if (missing.length) {
-      this.game.toast(`Wand still needs ${missing.map(([resource, amount]) => `${Math.max(0, amount - (resource === "creepers" ? this.game.creepers : this.game.inventory[resource] || 0))} ${resource}`).join(", ")}`);
-      return;
-    }
-    for (const resource of ["gold", "diamond", "sticks"]) this.game.inventory[resource] -= WAND_RECIPE[resource];
     this.game.hasWand = true;
     this.game.updateHud(true);
     this.game.selectTool("wand");
@@ -790,11 +694,6 @@ class CraftingManager {
 
   summonInfinity() {
     if (this.game.infinityActive) { this.game.toast("The Infinity monster is already in this mine"); return; }
-    if (this.game.creepers < BOSS_RECIPE.creepers || this.game.inventory.crystal < BOSS_RECIPE.crystal) {
-      this.game.toast(`Need ${Math.max(0, BOSS_RECIPE.crystal - this.game.inventory.crystal)} crystals and ${Math.max(0, BOSS_RECIPE.creepers - this.game.creepers)} creeper defeats`);
-      return;
-    }
-    this.game.inventory.crystal -= BOSS_RECIPE.crystal;
     this.game.infinityActive = true;
     this.game.monsters.spawnInfinity();
     this.game.updateHud(true);
@@ -1005,10 +904,11 @@ class Player {
       context.moveTo(12, -11);
       context.quadraticCurveTo(18, -15, 21, -9);
       context.stroke();
-    } else if (["dirt", "stone", "crystal"].includes(this.game.activeTool)) {
-      context.fillStyle = MATERIALS[this.game.activeTool].color;
+    } else if (MATERIALS[this.game.activeTool] || MACHINES[this.game.activeTool]) {
+      const heldItem = MATERIALS[this.game.activeTool] || MACHINES[this.game.activeTool];
+      context.fillStyle = heldItem.color;
       context.fillRect(12, -3, 9, 9);
-      context.fillStyle = MATERIALS[this.game.activeTool].highlight;
+      context.fillStyle = heldItem.highlight || heldItem.color;
       context.fillRect(13, -2, 7, 2);
     }
 
@@ -1043,10 +943,10 @@ class GameManager {
     this.dead = false;
     this.activeTool = "pick";
     this.hasWand = false;
-    this.hotbar = ["dirt", "stone", "crystal", "gold", "diamond", "sword"];
-    this.loadoutSelection = "dirt";
-    this.inventory = { dirt: 7, stone: 4, crystal: 1, gold: 0, diamond: 0, sticks: 0 };
+    this.inventory = { dirt: 7, stone: 4, crystal: 1, gold: 0, diamond: 0, sticks: 0, creepers: 0 };
     this.inventory.sword = 0;
+    this.craftingGrid = Array(9).fill(null);
+    this.selectedCraftMaterial = null;
     this.infinityActive = false;
     this.map = new MapManager();
     this.player = new Player(this);
@@ -1057,32 +957,81 @@ class GameManager {
     this.monsters.spawnWave();
     this.lastMiningMessage = 0;
     this.frameTime = 0;
-    this.renderHotbar();
+    this.minecraftRecipes = [];
+    this.minecraftItemsByName = new Map();
+    this.minecraftItemsById = new Map();
+    this.recipeBookLimit = 40;
     this.bindInterface();
     this.updateHud(true);
+    this.loadMinecraftRecipeBook();
+  }
+
+  getItemInfo(name) {
+    const known = RESOURCE_NAMES[name];
+    if (known) return known;
+    const rawName = name === "sticks" ? "stick" : name === "gold" ? "gold_ingot" : name === "sword" ? "stone_sword" : name;
+    const item = this.minecraftItemsByName.get(rawName);
+    return { name: item?.displayName || name.replaceAll("_", " "), color: recipeItemColor(name) };
   }
 
   bindInterface() {
-    document.querySelector("#tool-list").addEventListener("click", (event) => {
-      const button = event.target.closest(".tool");
-      if (button && !button.disabled) this.selectTool(button.dataset.tool);
-    });
+    document.querySelectorAll(".tool").forEach((button) => button.addEventListener("click", () => this.selectTool(button.dataset.tool)));
     document.querySelectorAll(".shop-item[data-buy]").forEach((button) => button.addEventListener("click", () => this.buy(button.dataset.buy)));
-    document.querySelectorAll(".craft-action").forEach((button) => button.addEventListener("click", () => this.craftItem(button.dataset.craft)));
+    document.querySelectorAll(".craft-action").forEach((button) => button.addEventListener("click", () => this.loadRecipe(button.dataset.fill)));
+    document.querySelector("#box-inventory").addEventListener("click", (event) => {
+      const item = event.target.closest("[data-add-material]");
+      if (item) this.selectCraftMaterial(item.dataset.addMaterial);
+    });
+    document.querySelector("#box-inventory").addEventListener("dragstart", (event) => {
+      const item = event.target.closest("[data-add-material]");
+      if (!item) return;
+      event.dataTransfer.setData("text/plain", `material:${item.dataset.addMaterial}`);
+      this.selectCraftMaterial(item.dataset.addMaterial);
+    });
+    const craftGrid = document.querySelector("#craft-grid");
+    craftGrid.addEventListener("click", (event) => {
+      const slot = event.target.closest("[data-slot]");
+      if (slot) this.editCraftSlot(Number(slot.dataset.slot), event.shiftKey);
+    });
+    craftGrid.addEventListener("dragover", (event) => event.preventDefault());
+    craftGrid.addEventListener("drop", (event) => {
+      event.preventDefault();
+      const slot = event.target.closest("[data-slot]");
+      if (!slot) return;
+      const payload = event.dataTransfer.getData("text/plain");
+      if (payload.startsWith("slot:")) this.swapCraftSlots(Number(payload.slice(5)), Number(slot.dataset.slot));
+      else if (payload.startsWith("material:")) {
+        this.selectCraftMaterial(payload.slice(9));
+        this.editCraftSlot(Number(slot.dataset.slot), event.shiftKey);
+      }
+    });
+    craftGrid.addEventListener("dragstart", (event) => {
+      const slot = event.target.closest("[data-slot]");
+      if (slot && this.craftingGrid[Number(slot.dataset.slot)]) event.dataTransfer.setData("text/plain", `slot:${slot.dataset.slot}`);
+    });
+    document.querySelector("#clear-ingredients").addEventListener("click", () => this.clearIngredients());
+    document.querySelector("#craft-selected").addEventListener("click", () => this.craftSelected());
+    document.querySelector("#craft-output").addEventListener("click", () => this.craftSelected());
+    document.querySelector("#recipe-search").addEventListener("input", () => {
+      this.recipeBookLimit = 40;
+      this.renderMinecraftRecipeBook();
+    });
+    document.querySelector("#minecraft-recipe-list").addEventListener("click", (event) => {
+      const recipeButton = event.target.closest("[data-recipe-key]");
+      if (recipeButton) this.loadMinecraftRecipe(recipeButton.dataset.recipeKey);
+      if (event.target.closest("[data-load-more]")) {
+        this.recipeBookLimit += 40;
+        this.renderMinecraftRecipeBook();
+      }
+    });
+    document.querySelector("#inventory-hotbar").addEventListener("click", (event) => {
+      const item = event.target.closest("[data-tool]");
+      if (item) this.selectTool(item.dataset.tool);
+    });
     document.querySelector("#open-crafting").addEventListener("click", () => this.openCraftingBox());
-    document.querySelector("#open-loadout").addEventListener("click", () => this.openLoadoutBox());
     document.querySelector("#close-crafting").addEventListener("click", () => document.querySelector("#crafting-box").close());
-    document.querySelector("#close-loadout").addEventListener("click", () => document.querySelector("#loadout-box").close());
-    document.querySelector("#loadout-items").addEventListener("click", (event) => {
-      const button = event.target.closest("[data-loadout-item]");
-      if (button && !button.disabled) this.selectLoadoutItem(button.dataset.loadoutItem);
-    });
-    document.querySelector("#loadout-slots").addEventListener("click", (event) => {
-      const button = event.target.closest("[data-assign-slot]");
-      if (button) this.assignLoadoutItem(Number(button.dataset.assignSlot));
-    });
     document.querySelector("#restart-button").addEventListener("click", () => this.restart());
-    document.querySelector("#craft-wand").addEventListener("click", () => this.craftWand());
+    document.querySelector("#craft-wand").addEventListener("click", () => this.loadRecipe("wand"));
     document.querySelectorAll(".touch-pad button").forEach((button) => {
       const key = ({ up: "w", down: "s", left: "a", right: "d" })[button.dataset.dir];
       button.addEventListener("pointerdown", (event) => { event.preventDefault(); keys.add(key); button.setPointerCapture(event.pointerId); });
@@ -1093,85 +1042,342 @@ class GameManager {
     });
   }
 
+  async loadMinecraftRecipeBook() {
+    const status = document.querySelector("#recipe-book-status");
+    try {
+      const dataRoot = "node_modules/minecraft-data/minecraft-data/data/pc/1.21.4/";
+      const [itemResponse, recipeResponse] = await Promise.all([
+        fetch(`${dataRoot}items.json`),
+        fetch(`${dataRoot}recipes.json`),
+      ]);
+      if (!itemResponse.ok || !recipeResponse.ok) throw new Error("Could not load local Minecraft recipe data.");
+      const [items, rawRecipes] = await Promise.all([itemResponse.json(), recipeResponse.json()]);
+      this.minecraftItemsById = new Map(items.map((item) => [item.id, item]));
+      this.minecraftItemsByName = new Map(items.map((item) => [item.name, item]));
+      const recipes = [];
+
+      for (const [outputId, variants] of Object.entries(rawRecipes)) {
+        const outputItem = this.minecraftItemsById.get(Number(outputId));
+        if (!outputItem) continue;
+        for (const [variantIndex, rawRecipe] of variants.entries()) {
+          const resultItem = this.minecraftItemsById.get(rawRecipe.result?.id);
+          if (!resultItem || !rawRecipe.result.count) continue;
+          const itemName = (id) => {
+            if (!id) return null;
+            const item = this.minecraftItemsById.get(id);
+            return item ? normalizeItemName(item.name) : undefined;
+          };
+          let shape = null;
+          let ingredients = null;
+          if (rawRecipe.inShape) {
+            shape = rawRecipe.inShape.map((row) => row.map(itemName));
+            if (shape.some((row) => row.some((name, index) => rawRecipe.inShape[shape.indexOf(row)][index] !== 0 && name === undefined))) continue;
+          } else if (rawRecipe.ingredients) {
+            ingredients = rawRecipe.ingredients.map(itemName);
+            if (ingredients.some((name, index) => name === undefined && rawRecipe.ingredients[index] !== 0)) continue;
+          } else {
+            continue;
+          }
+          const output = normalizeItemName(resultItem.name);
+          recipes.push({
+            key: `${outputId}:${variantIndex}`,
+            output,
+            outputName: resultItem.displayName,
+            count: rawRecipe.result.count,
+            shape,
+            ingredients,
+          });
+        }
+      }
+      recipes.sort((left, right) => left.outputName.localeCompare(right.outputName));
+      this.minecraftRecipes = recipes;
+      document.querySelector("#recipe-count").textContent = `${recipes.length} RECIPES`;
+      status.textContent = "Minecraft Java 1.21.4 · shaped recipes show their exact 3×3 layout";
+      this.renderMinecraftRecipeBook();
+      this.updateHud(true);
+    } catch (error) {
+      status.textContent = "Recipe book could not load. Run the game with npm start.";
+      console.error(error);
+    }
+  }
+
+  renderMinecraftRecipeBook() {
+    const query = document.querySelector("#recipe-search").value.trim().toLowerCase();
+    const matches = this.minecraftRecipes.filter((recipe) => `${recipe.outputName} ${recipe.output}`.toLowerCase().includes(query));
+    const visible = matches.slice(0, this.recipeBookLimit);
+    const list = document.querySelector("#minecraft-recipe-list");
+    list.innerHTML = visible.map((recipe) => {
+      const cells = Array(9).fill(null);
+      if (recipe.shape) {
+        const height = recipe.shape.length;
+        const width = Math.max(...recipe.shape.map((row) => row.length));
+        const offsetX = Math.floor((3 - width) / 2);
+        const offsetY = Math.floor((3 - height) / 2);
+        for (let y = 0; y < height; y++) {
+          for (let x = 0; x < recipe.shape[y].length; x++) cells[(y + offsetY) * 3 + x + offsetX] = recipe.shape[y][x];
+        }
+      } else {
+        recipe.ingredients.slice(0, 9).forEach((name, index) => { cells[index] = name; });
+      }
+      const pattern = cells.map((name) => `<i class="recipe-cell ${name ? "filled" : ""}"${name ? ` style="--swatch:${RESOURCE_NAMES[name]?.color || recipeItemColor(name)}" title="${RESOURCE_NAMES[name]?.name || name}"` : ""}></i>`).join("");
+      const ingredientLabel = recipe.shape ? "SHAPED" : "SHAPELESS";
+      return `<button class="minecraft-recipe" data-recipe-key="${recipe.key}" title="Load ${recipe.outputName} recipe into the 3x3 grid"><span class="recipe-pattern">${pattern}</span><span><strong class="recipe-name">${recipe.outputName}</strong><br><small class="recipe-count">${ingredientLabel} RECIPE</small></span><span class="recipe-output">×${recipe.count}</span></button>`;
+    }).join("");
+    if (matches.length > visible.length) list.insertAdjacentHTML("beforeend", '<button class="craft-action" data-load-more>Show more recipes</button>');
+    document.querySelector("#recipe-book-status").textContent = matches.length ? `Showing ${visible.length} of ${matches.length} matching recipe variants` : "No recipes match that search.";
+  }
+
+  loadMinecraftRecipe(recipeKey) {
+    const recipe = this.minecraftRecipes.find((entry) => entry.key === recipeKey);
+    if (!recipe) return;
+    const required = recipe.shape ? recipe.shape.flat().filter(Boolean).reduce((counts, item) => ({ ...counts, [item]: (counts[item] || 0) + 1 }), {}) : recipe.ingredients.reduce((counts, item) => ({ ...counts, [item]: (counts[item] || 0) + 1 }), {});
+    const missing = Object.entries(required).filter(([item, count]) => (this.inventory[item] || 0) < count);
+    if (missing.length) {
+      this.toast(`Need ${missing.map(([item, count]) => `${count - (this.inventory[item] || 0)} ${RESOURCE_NAMES[item]?.name || item}`).join(", ")}`);
+      return;
+    }
+    this.craftingGrid = Array(9).fill(null);
+    if (recipe.shape) {
+      const offsetY = Math.floor((3 - recipe.shape.length) / 2);
+      const width = Math.max(...recipe.shape.map((row) => row.length));
+      const offsetX = Math.floor((3 - width) / 2);
+      for (let y = 0; y < recipe.shape.length; y++) {
+        for (let x = 0; x < recipe.shape[y].length; x++) {
+          const material = recipe.shape[y][x];
+          if (material) this.craftingGrid[(y + offsetY) * 3 + x + offsetX] = { material, count: 1 };
+        }
+      }
+    } else {
+      recipe.ingredients.forEach((material, index) => {
+        const existing = this.craftingGrid.find((item) => item?.material === material);
+        if (existing) existing.count += 1;
+        else this.craftingGrid[index] = { material, count: 1 };
+      });
+    }
+    this.selectedCraftMaterial = null;
+    this.updateHud(true);
+  }
+
   selectTool(tool) {
     if (tool === "wand" && !this.hasWand) { this.toast("Forge the Infinity wand first"); return; }
     if (tool === "sword" && !this.inventory.sword) { this.toast("Craft a sword at the workbench first"); return; }
+    if ((MATERIALS[tool] || MACHINES[tool]) && !this.inventory[tool]) { this.toast(`No ${this.getItemInfo(tool).name.toLowerCase()} available`); return; }
     this.activeTool = tool;
-    document.querySelectorAll(".tool").forEach((button) => button.setAttribute("aria-pressed", String(button.dataset.tool === tool)));
+    document.querySelectorAll(".tool, .hotbar-slot").forEach((button) => button.setAttribute("aria-pressed", String(button.dataset.tool === tool)));
     document.querySelector("#active-tool").textContent = TOOL_NAMES[tool];
   }
 
   openCraftingBox() {
-    const loadout = document.querySelector("#loadout-box");
-    if (loadout.open) loadout.close();
     const dialog = document.querySelector("#crafting-box");
     this.updateHud(true);
     if (!dialog.open) dialog.showModal();
   }
 
-  openLoadoutBox() {
-    const crafting = document.querySelector("#crafting-box");
-    if (crafting.open) crafting.close();
-    const loadout = document.querySelector("#loadout-box");
-    if (loadout.open) { loadout.close(); return; }
-    this.renderLoadout();
-    loadout.showModal();
+  craftItem(item) {
+    this.loadRecipe(item);
   }
 
-  selectLoadoutItem(item) {
-    this.loadoutSelection = item;
-    this.renderLoadout();
-  }
-
-  assignLoadoutItem(index) {
-    if (index < 0 || index >= this.hotbar.length || this.itemCount(this.loadoutSelection) < 1) return;
-    const previousSlot = this.hotbar.indexOf(this.loadoutSelection);
-    if (previousSlot >= 0 && previousSlot !== index) {
-      this.hotbar[previousSlot] = this.hotbar[index];
+  loadRecipe(recipeName) {
+    if (recipeName === "sword") {
+      const stoneSword = this.minecraftRecipes.find((recipe) => recipe.output === "sword" && recipe.outputName === "Stone Sword" && recipe.shape);
+      if (stoneSword) this.loadMinecraftRecipe(stoneSword.key);
+      else this.toast("The Minecraft recipe book is still loading");
+      return;
     }
-    this.hotbar[index] = this.loadoutSelection;
-    this.renderHotbar();
-    this.renderLoadout();
+    const recipe = CRAFT_RECIPES[recipeName];
+    if (!recipe) return;
+    if (recipeName === "sword" && this.inventory.sword) { this.toast("You already have a sword"); return; }
+    if (recipeName === "wand" && this.hasWand) { this.toast("The Infinity wand is already forged"); return; }
+    if (recipeName === "boss" && this.infinityActive) { this.toast("The Infinity monster is already here"); return; }
+    const missing = Object.entries(recipe).filter(([material, amount]) => (this.inventory[material] || 0) < amount);
+    if (missing.length) {
+      this.toast(`Need ${missing.map(([material, amount]) => `${amount - (this.inventory[material] || 0)} ${RESOURCE_NAMES[material]?.name || material}`).join(", ")}`);
+      return;
+    }
+    this.craftingGrid = Array(9).fill(null);
+    let slotIndex = 0;
+    for (const [material, amount] of Object.entries(recipe)) {
+      let remaining = amount;
+      while (remaining > 0 && slotIndex < this.craftingGrid.length) {
+        const count = Math.min(64, remaining);
+        this.craftingGrid[slotIndex++] = { material, count };
+        remaining -= count;
+      }
+    }
+    this.selectedCraftMaterial = null;
     this.updateHud(true);
   }
 
-  itemCount(item) {
-    if (item === "wand") return Number(this.hasWand);
-    if (item === "pick" || item === "fuse") return 1;
-    return this.inventory[item] || 0;
+  getCraftingCounts() {
+    const counts = {};
+    for (const item of this.craftingGrid) {
+      if (item) counts[item.material] = (counts[item.material] || 0) + item.count;
+    }
+    return counts;
   }
 
-  renderHotbar() {
-    const bar = document.querySelector("#tool-list");
-    const actions = ["pick", "fuse"];
-    const actionButton = (item, label, key) => `<button class="tool" data-tool="${item}" aria-pressed="${this.activeTool === item}" title="${TOOL_NAMES[item]}"><canvas class="tool-icon" data-icon="${item}"></canvas><span class="tool-label">${label}</span><span class="tool-count">${key}</span></button>`;
-    const slots = this.hotbar.map((item, index) => {
-      const count = this.itemCount(item);
-      const countLabel = item === "wand" ? "100×" : item === "sword" ? "1" : String(count);
-      const name = RESOURCE_NAMES[item]?.name || TOOL_NAMES[item];
-      return `<button class="tool" data-tool="${item}" data-hotbar-index="${index}" aria-pressed="${this.activeTool === item}" title="${name} · slot ${index + 1}" ${count < 1 ? "disabled" : ""}><canvas class="tool-icon" data-icon="${item}"></canvas><span class="tool-label">${name}</span><span class="tool-count" data-hotbar-count="${item}">${countLabel}</span></button>`;
-    }).join("");
-    bar.innerHTML = `${actionButton(actions[0], "Mine", "0")}${actionButton(actions[1], "Fuse", "F")}${slots}`;
-    bar.querySelectorAll("canvas[data-icon]").forEach((icon) => drawMaterialIcon(icon, icon.dataset.icon));
+  getGridRecipe() {
+    const selected = this.getCraftingCounts();
+    const customRecipe = Object.entries(CRAFT_RECIPES).find(([, recipe]) => {
+      const materials = new Set([...Object.keys(recipe), ...Object.keys(selected)]);
+      return [...materials].every((material) => (recipe[material] || 0) === (selected[material] || 0));
+    });
+    if (customRecipe) {
+      const [key, ingredients] = customRecipe;
+      const outputName = key === "boss" ? "Infinity Monster" : key === "wand" ? "Infinity Wand" : this.getItemInfo(key).name;
+      return { type: "custom", key, ingredients, output: key, outputName, count: 1 };
+    }
+    const recipe = this.minecraftRecipes.find((entry) => this.matchesMinecraftRecipe(entry));
+    return recipe ? { type: "minecraft", key: recipe.key, recipe, output: recipe.output, outputName: recipe.outputName, count: recipe.count } : null;
   }
 
-  renderLoadout() {
-    const slots = document.querySelector("#loadout-slots");
-    slots.innerHTML = this.hotbar.map((item, index) => `<button class="loadout-slot ${this.loadoutSelection === item ? "is-selected" : ""}" data-assign-slot="${index}" title="Assign selected item to slot ${index + 1}"><canvas data-icon="${item}"></canvas><span class="loadout-slot-copy"><small>Slot ${index + 1}</small><strong>${RESOURCE_NAMES[item]?.name || TOOL_NAMES[item]}</strong></span></button>`).join("");
-    const items = document.querySelector("#loadout-items");
-    const availableItems = [...Object.keys(MATERIALS), "sword", "wand"];
-    items.innerHTML = availableItems.map((item) => {
-      const count = this.itemCount(item);
-      const name = RESOURCE_NAMES[item]?.name || TOOL_NAMES[item];
-      return `<button class="loadout-item ${this.loadoutSelection === item ? "is-selected" : ""}" data-loadout-item="${item}" ${count < 1 ? "disabled" : ""} title="Select ${name}"><canvas data-icon="${item}"></canvas><span>${name}</span><strong>${item === "wand" ? (count ? "READY" : "LOCKED") : count}</strong></button>`;
-    }).join("");
-    document.querySelectorAll("#loadout-box canvas[data-icon]").forEach((icon) => drawMaterialIcon(icon, icon.dataset.icon));
+  matchesMinecraftRecipe(recipe) {
+    if (recipe.shape) {
+      const height = recipe.shape.length;
+      const width = Math.max(...recipe.shape.map((row) => row.length));
+      for (let offsetY = 0; offsetY <= 3 - height; offsetY++) {
+        for (let offsetX = 0; offsetX <= 3 - width; offsetX++) {
+          for (const mirrored of [false, true]) {
+            let matches = true;
+            for (let y = 0; y < 3 && matches; y++) {
+              for (let x = 0; x < 3; x++) {
+                const item = this.craftingGrid[y * 3 + x];
+                const shapeY = y - offsetY;
+                const shapeX = x - offsetX;
+                let expected = null;
+                if (shapeY >= 0 && shapeY < height && shapeX >= 0 && shapeX < width) {
+                  const sourceX = mirrored ? width - shapeX - 1 : shapeX;
+                  expected = recipe.shape[shapeY][sourceX] || null;
+                }
+                const actual = item ? normalizeItemName(item.material) : null;
+                if (actual !== expected || (item && item.count < 1)) { matches = false; break; }
+              }
+            }
+            if (matches) return true;
+          }
+        }
+      }
+      return false;
+    }
+    const required = recipe.ingredients.reduce((counts, item) => ({ ...counts, [item]: (counts[item] || 0) + 1 }), {});
+    const selected = {};
+    for (const item of this.craftingGrid) {
+      if (item) selected[normalizeItemName(item.material)] = (selected[normalizeItemName(item.material)] || 0) + item.count;
+    }
+    const materials = new Set([...Object.keys(required), ...Object.keys(selected)]);
+    return [...materials].every((material) => (required[material] || 0) === (selected[material] || 0));
   }
 
-  craftItem(item) {
-    if (item === "sword") this.crafting.craftSword();
-    if (item === "wand") this.crafting.craftWand();
-    if (item === "boss") this.crafting.summonInfinity();
+  selectCraftMaterial(material) {
+    if (!(material in this.inventory)) return;
+    const used = this.getCraftingCounts()[material] || 0;
+    if ((this.inventory[material] || 0) <= used) { this.toast(`No more ${this.getItemInfo(material).name.toLowerCase()} available`); return; }
+    this.selectedCraftMaterial = material;
+    this.updateHud(true);
+  }
+
+  editCraftSlot(index, fillStack = false) {
+    if (index < 0 || index >= this.craftingGrid.length) return;
+    const current = this.craftingGrid[index];
+    if (!this.selectedCraftMaterial) {
+      if (!current) return;
+      this.craftingGrid[index] = null;
+      this.selectedCraftMaterial = current.material;
+      this.updateHud(true);
+      return;
+    }
+    const material = this.selectedCraftMaterial;
+    const used = this.getCraftingCounts()[material] || 0;
+    const available = (this.inventory[material] || 0) - used + (current?.material === material ? current.count : 0);
+    if (available <= 0) { this.toast(`No more ${this.getItemInfo(material).name.toLowerCase()} available`); return; }
+    if (current?.material === material) {
+      current.count = Math.min(64, current.count + (fillStack ? available : 1));
+    } else {
+      this.craftingGrid[index] = { material, count: fillStack ? Math.min(64, available) : 1 };
+    }
+    this.updateHud(true);
+  }
+
+  swapCraftSlots(from, to) {
+    if (from === to || !this.craftingGrid[from] || to < 0 || to >= this.craftingGrid.length) return;
+    [this.craftingGrid[from], this.craftingGrid[to]] = [this.craftingGrid[to], this.craftingGrid[from]];
+    this.updateHud(true);
+  }
+
+  removeIngredient(material) {
+    const slot = this.craftingGrid.find((item) => item?.material === material);
+    if (!slot) return;
+    if (slot.count === 1) this.craftingGrid[this.craftingGrid.indexOf(slot)] = null;
+    else slot.count -= 1;
+    this.updateHud(true);
+  }
+
+  clearIngredients() {
+    this.craftingGrid = Array(9).fill(null);
+    this.selectedCraftMaterial = null;
+    this.updateHud(true);
+    this.toast("Ingredients returned to your inventory");
+  }
+
+  craftSelected() {
+    const match = this.getGridRecipe();
+    if (!match) { this.toast("No recipe matches these ingredients"); return; }
+    if (match.type === "minecraft") {
+      this.craftMinecraftRecipe(match.recipe);
+      return;
+    }
+    if (match.key === "wand" && this.hasWand) { this.toast("The Infinity wand is already forged"); return; }
+    if (match.key === "boss" && this.infinityActive) { this.toast("The Infinity monster is already here"); return; }
+    if (!this.spendInventory(match.ingredients)) return;
+    this.craftingGrid = Array(9).fill(null);
+    this.selectedCraftMaterial = null;
+    if (match.key === "wand") this.crafting.craftWand();
+    if (match.key === "boss") this.crafting.summonInfinity();
+    if (MACHINES[match.key]) {
+      this.inventory[match.key] = (this.inventory[match.key] || 0) + match.count;
+      this.toast(`${MACHINES[match.key].name} crafted · select it from the bottom bar`);
+    }
+    this.updateHud(true);
+  }
+
+  craftMinecraftRecipe(recipe) {
+    if (recipe.output === "sword" && this.inventory.sword) { this.toast("You already have a sword"); return; }
+    const costs = this.getRecipeCosts({ type: "minecraft", recipe });
+    if (!this.spendInventory(costs)) return;
+    if (recipe.shape) {
+      for (let index = 0; index < this.craftingGrid.length; index++) {
+        const item = this.craftingGrid[index];
+        if (!item) continue;
+        item.count -= 1;
+        if (item.count <= 0) this.craftingGrid[index] = null;
+      }
+    } else {
+      for (const material of recipe.ingredients) {
+        const slot = this.craftingGrid.find((item) => item && normalizeItemName(item.material) === material);
+        if (!slot) continue;
+        slot.count -= 1;
+        if (slot.count <= 0) this.craftingGrid[this.craftingGrid.indexOf(slot)] = null;
+      }
+    }
+    this.inventory[recipe.output] = (this.inventory[recipe.output] || 0) + recipe.count;
+    this.toast(`Crafted ${recipe.outputName} ×${recipe.count}`);
+    this.updateHud(true);
+  }
+
+  getRecipeCosts(match) {
+    if (match.type === "custom") return match.ingredients;
+    if (!match.recipe.shape) return match.recipe.ingredients.reduce((counts, material) => ({ ...counts, [material]: (counts[material] || 0) + 1 }), {});
+    return match.recipe.shape.flat().filter(Boolean).reduce((counts, material) => ({ ...counts, [material]: (counts[material] || 0) + 1 }), {});
+  }
+
+  spendInventory(costs) {
+    const missing = Object.entries(costs).filter(([material, count]) => (this.inventory[material] || 0) < count);
+    if (missing.length) {
+      this.toast(`Not enough ${missing.map(([material, count]) => `${RESOURCE_NAMES[material]?.name || this.getItemInfo(material).name} (${this.inventory[material] || 0}/${count})`).join(", ")}`);
+      return false;
+    }
+    for (const [material, count] of Object.entries(costs)) this.inventory[material] = Math.max(0, (this.inventory[material] || 0) - count);
+    return true;
   }
 
   buy(material) {
@@ -1184,19 +1390,21 @@ class GameManager {
   }
 
   craftWand() {
-    this.crafting.craftWand();
+    this.loadRecipe("wand");
   }
 
   placeAt(x, y) {
     const material = this.activeTool;
-    if (!MATERIALS[material]) return;
-    if (this.inventory[material] <= 0) { this.toast(`No ${material} cubes in your bag`); return; }
+    const item = MATERIALS[material] || MACHINES[material];
+    if (!item) return;
+    if (this.inventory[material] <= 0) { this.toast(`No ${item.name.toLowerCase()} in your bag`); return; }
     const message = this.map.place(x, y, material, this.player, this.monsters.monsters);
     if (message) { this.toast(message); return; }
     this.inventory[material] -= 1;
     const center = cellCenter(x, y);
-    this.burst(center.x, center.y, MATERIALS[material].highlight, 5);
-    this.crafting.combineAt(x, y);
+    this.burst(center.x, center.y, item.highlight || item.color, 5);
+    if (MATERIALS[material]) this.crafting.combineAt(x, y);
+    if (this.inventory[material] <= 0) this.selectTool("pick");
     this.updateHud(true);
   }
 
@@ -1207,8 +1415,6 @@ class GameManager {
       mineTarget = { x, y };
       miningTimer = 0;
       this.mineTarget();
-    } else if (this.activeTool === "sword") {
-      this.player.attack();
     } else if (this.activeTool === "wand") {
       this.castWand(x, y);
     } else if (this.activeTool === "fuse") {
@@ -1279,11 +1485,13 @@ class GameManager {
     this.hasWand = false;
     this.infinityActive = false;
     this.activeTool = "pick";
-    this.inventory = { dirt: 7, stone: 4, crystal: 1, gold: 0, diamond: 0, sticks: 0, sword: 0 };
+    this.inventory = { dirt: 7, stone: 4, crystal: 1, gold: 0, diamond: 0, sticks: 0, creepers: 0, sword: 0 };
+    this.craftingGrid = Array(9).fill(null);
+    this.selectedCraftMaterial = null;
+    document.querySelector('[data-tool="wand"]').disabled = true;
+    document.querySelector('[data-tool="sword"]').disabled = true;
     const craftingBox = document.querySelector("#crafting-box");
     if (craftingBox.open) craftingBox.close();
-    const loadoutBox = document.querySelector("#loadout-box");
-    if (loadoutBox.open) loadoutBox.close();
     this.dead = false;
     this.map.generate(1);
     this.player.x = (MAP_WIDTH / 2 + 0.5) * TILE;
@@ -1293,8 +1501,6 @@ class GameManager {
     this.coinsManager.scatter(30);
     this.monsters.spawnWave();
     document.querySelector("#game-over").hidden = true;
-    this.hotbar = ["dirt", "stone", "crystal", "gold", "diamond", "sword"];
-    this.renderHotbar();
     this.updateHud(true);
   }
 
@@ -1315,7 +1521,7 @@ class GameManager {
   }
 
   update(delta, now) {
-    if (!this.dead && !document.querySelector("#crafting-box").open && !document.querySelector("#loadout-box").open) {
+    if (!this.dead && !document.querySelector("#crafting-box").open) {
       this.player.update(delta);
       this.monsters.update(delta);
       this.coinsManager.update(delta);
@@ -1346,11 +1552,14 @@ class GameManager {
   }
 
   updateSentries(delta) {
+    const generators = [...this.map.placed.values()].filter((placed) => placed.kind === "machine" && placed.machineType === "generator");
     for (const [key, placed] of this.map.placed) {
-      if (placed.kind !== "sentry") continue;
-      placed.cooldown = (placed.cooldown || Math.random() * 0.5) - delta;
-      if (placed.cooldown > 0) continue;
+      if (placed.kind !== "sentry" && !(placed.kind === "machine" && placed.machineType === "turret")) continue;
       const origin = cellCenter(placed.x, placed.y);
+      const powered = generators.some((generator) => distance(origin.x, origin.y, (generator.x + 0.5) * TILE, (generator.y + 0.5) * TILE) <= TILE * 6);
+      placed.powered = powered;
+      placed.cooldown = (placed.cooldown || Math.random() * 0.5) - delta * (powered ? 2.5 : 1);
+      if (placed.cooldown > 0) continue;
       let nearest = null;
       let best = TILE * 7;
       for (const monster of this.monsters.monsters) {
@@ -1364,7 +1573,7 @@ class GameManager {
         placed.targetY = nearest.y;
         placed.beam = 0.12;
       }
-      placed.cooldown = 0.88;
+      placed.cooldown = powered ? 0.36 : 0.9;
     }
   }
 
@@ -1384,35 +1593,79 @@ class GameManager {
     const threat = document.querySelector("#threat-value");
     threat.textContent = this.monsters.monsters.length > 7 ? "HIGH" : this.monsters.monsters.length > 3 ? "ACTIVE" : "CLEAR";
     threat.style.color = this.monsters.monsters.length > 7 ? "#f27672" : this.monsters.monsters.length > 3 ? "#edbd58" : "#75e0b4";
+    const materialInfo = new Map(Object.entries(RESOURCE_NAMES));
+    for (const [key, count] of Object.entries(this.inventory)) {
+      if (count > 0 && !materialInfo.has(key)) materialInfo.set(key, this.getItemInfo(key));
+    }
+    const materialItems = [...materialInfo].map(([key, material]) => [key, material.name, material.color]);
+    const usedMaterials = this.getCraftingCounts();
     const inventory = document.querySelector("#inventory-list");
-    inventory.innerHTML = Object.entries(RESOURCE_NAMES).map(([key, material]) => `<div class="material"><i class="material-swatch" style="--swatch:${material.color}"></i><span class="material-name">${material.name}</span><strong class="material-count">${this.inventory[key] || 0}</strong></div>`).join("");
+    inventory.innerHTML = materialItems.map(([key, name, color]) => `<div class="material"><i class="material-swatch" style="--swatch:${color}"></i><span class="material-name">${name}</span><strong class="material-count">${this.inventory[key] || 0}</strong></div>`).join("");
     const boxInventory = document.querySelector("#box-inventory");
-    boxInventory.innerHTML = [...Object.entries(RESOURCE_NAMES).map(([key, material]) => [key, material.name, material.color, this.inventory[key] || 0]), ["creepers", "Creeper kills", "#82c765", this.creepers]]
-      .map(([key, name, color, count]) => `<div class="box-item"><div class="box-item-top"><i class="box-item-swatch" style="--swatch:${color}"></i>${name}</div><strong class="box-item-count">${count}</strong></div>`).join("");
-    document.querySelectorAll("[data-hotbar-count]").forEach((element) => {
-      const item = element.dataset.hotbarCount;
-      const count = this.itemCount(item);
-      element.textContent = item === "wand" ? "100×" : String(count);
-      element.closest(".tool").disabled = count < 1;
+    boxInventory.innerHTML = materialItems.map(([key, name, color]) => {
+      const count = this.inventory[key] || 0;
+      const used = usedMaterials[key] || 0;
+      const selected = this.selectedCraftMaterial === key;
+      return `<button class="box-item ${selected ? "selected" : ""}" data-add-material="${key}" draggable="${count > used}" ${count <= used ? "disabled" : ""}><span class="box-item-top"><i class="box-item-swatch" style="--swatch:${color}"></i>${name}</span><strong class="box-item-count">${count}</strong><span class="material-name">${count - used} available</span></button>`;
+    }).join("");
+    const gridElement = document.querySelector("#craft-grid");
+    gridElement.querySelectorAll("[data-slot]").forEach((slot) => {
+      const item = this.craftingGrid[Number(slot.dataset.slot)];
+      slot.classList.toggle("has-item", !!item);
+      slot.draggable = !!item;
+      const itemInfo = item ? this.getItemInfo(item.material) : null;
+      slot.innerHTML = item ? `<i class="craft-slot-swatch" style="--swatch:${itemInfo.color}"></i><span class="craft-slot-count">${item.count}</span>` : "";
+      slot.setAttribute("aria-label", item ? `${itemInfo.name}, ${item.count}` : "Empty crafting slot");
     });
+    const selectedEntries = Object.entries(usedMaterials).filter(([, count]) => count > 0);
+    const selectedCount = selectedEntries.reduce((total, [, count]) => total + count, 0);
+    const ingredientList = document.querySelector("#ingredient-list");
+    ingredientList.innerHTML = selectedEntries.length ? selectedEntries.map(([key, count]) => {
+      const itemInfo = this.getItemInfo(key);
+      return `<button class="ingredient-chip" data-remove-material="${key}" title="Click to return one"><i style="--swatch:${itemInfo.color}"></i>${itemInfo.name}<b>×${count}</b></button>`;
+    }).join("") : '<span class="ingredient-empty">Ingredients in the grid appear here.</span>';
+    document.querySelector("#ingredient-summary").textContent = `${selectedCount} ingredient${selectedCount === 1 ? "" : "s"}`;
+    ingredientList.querySelectorAll("[data-remove-material]").forEach((button) => button.addEventListener("click", () => this.removeIngredient(button.dataset.removeMaterial)));
+    document.querySelector("#clear-ingredients").disabled = selectedEntries.length === 0;
+    const matchedRecipe = this.getGridRecipe();
+    const alreadyCrafted = matchedRecipe?.type === "custom" ? matchedRecipe.key === "wand" ? this.hasWand : matchedRecipe.key === "boss" ? this.infinityActive : false : matchedRecipe?.output === "sword" && !!this.inventory.sword;
+    const craftButton = document.querySelector("#craft-selected");
+    craftButton.disabled = !matchedRecipe || alreadyCrafted;
+    craftButton.textContent = matchedRecipe ? `Craft ${matchedRecipe.outputName}` : "Craft selected";
+    const output = document.querySelector("#craft-output");
+    const outputName = matchedRecipe?.outputName || "";
+    const outputColor = matchedRecipe?.key === "boss" ? "#b27be8" : matchedRecipe ? this.getItemInfo(matchedRecipe.output).color : "#b27be8";
+    output.disabled = !matchedRecipe || alreadyCrafted;
+    output.innerHTML = matchedRecipe ? `<i class="craft-slot-swatch" style="--swatch:${outputColor}"></i><span class="craft-slot-count">${outputName} ×${matchedRecipe.count}</span>` : "";
+    output.setAttribute("aria-label", matchedRecipe ? `Craft ${outputName}, quantity ${matchedRecipe.count}` : "No matching recipe");
+    document.querySelectorAll("[data-count]").forEach((element) => { element.textContent = String(this.inventory[element.dataset.count]); });
     document.querySelectorAll(".shop-item[data-buy]").forEach((button) => { button.disabled = this.coins < MATERIALS[button.dataset.buy].buy; });
     for (const [resource, required] of Object.entries(WAND_RECIPE)) {
-      const available = resource === "creepers" ? this.creepers : this.inventory[resource] || 0;
+      const available = this.inventory[resource] || 0;
       const counter = document.querySelector(`[data-requirement="${resource}"]`);
       counter.textContent = `${Math.min(available, required)} / ${required}`;
       counter.classList.toggle("requirement-met", available >= required);
     }
     const forgeButton = document.querySelector("#craft-wand");
-    forgeButton.disabled = this.hasWand || Object.entries(WAND_RECIPE).some(([resource, required]) => (resource === "creepers" ? this.creepers : this.inventory[resource] || 0) < required);
-    forgeButton.querySelector(".shop-name").textContent = this.hasWand ? "Infinity wand forged" : "Forge the wand";
-    forgeButton.querySelector(".shop-cost").textContent = this.hasWand ? "READY" : forgeButton.disabled ? "LOCKED" : "FORGE";
-    document.querySelector('[data-craft="sword"]').disabled = this.inventory.sword > 0 || this.inventory.stone < 2 || this.inventory.sticks < 1;
-    document.querySelector('[data-craft="sword"]').textContent = this.inventory.sword ? "Already crafted" : "Craft sword";
-    document.querySelector('[data-craft="wand"]').disabled = forgeButton.disabled;
-    document.querySelector('[data-craft="wand"]').textContent = this.hasWand ? "Already forged" : forgeButton.disabled ? "Gather materials" : "Forge wand";
-    document.querySelector('[data-craft="boss"]').disabled = this.infinityActive || this.creepers < BOSS_RECIPE.creepers || this.inventory.crystal < BOSS_RECIPE.crystal;
-    document.querySelector('[data-craft="boss"]').textContent = this.infinityActive ? "Already summoned" : "Summon monster";
-    if (document.querySelector("#loadout-box").open) this.renderLoadout();
+    forgeButton.disabled = this.hasWand;
+    forgeButton.querySelector(".shop-name").textContent = this.hasWand ? "Infinity wand forged" : "Load wand ingredients";
+    forgeButton.querySelector(".shop-cost").textContent = this.hasWand ? "READY" : "LOAD";
+    document.querySelector('[data-tool="wand"]').disabled = !this.hasWand;
+    document.querySelector('[data-tool="sword"]').disabled = !this.inventory.sword;
+    document.querySelectorAll("[data-fill]").forEach((button) => {
+      const isSword = button.dataset.fill === "sword";
+      const swordRecipe = isSword ? this.minecraftRecipes.find((recipe) => recipe.output === "sword" && recipe.outputName === "Stone Sword" && recipe.shape) : null;
+      const recipe = isSword ? swordRecipe && this.getRecipeCosts({ type: "minecraft", recipe: swordRecipe }) : CRAFT_RECIPES[button.dataset.fill];
+      const available = !!recipe && Object.entries(recipe).every(([material, amount]) => (this.inventory[material] || 0) >= amount);
+      const owned = isSword ? !!this.inventory.sword : button.dataset.fill === "wand" ? this.hasWand : button.dataset.fill === "boss" ? this.infinityActive : false;
+      button.disabled = !available || owned;
+      button.textContent = owned ? "Already made" : "Load ingredients";
+    });
+    const hotbar = document.querySelector("#inventory-hotbar");
+    hotbar.innerHTML = Object.entries({ ...MATERIALS, ...MACHINES }).filter(([material]) => this.inventory[material] > 0).map(([material, details], index) =>
+      `<button class="hotbar-slot" data-tool="${material}" aria-pressed="${this.activeTool === material}" title="Place ${details.name} (${this.inventory[material]})"><kbd class="hotbar-key">${index + 1}</kbd><i class="hotbar-swatch" style="--swatch:${details.color}"></i><strong class="hotbar-amount">${this.inventory[material]}</strong></button>`
+    ).join("");
+    if ((MATERIALS[this.activeTool] || MACHINES[this.activeTool]) && !this.inventory[this.activeTool]) this.activeTool = "pick";
     if (force) this.selectTool(this.activeTool);
   }
 
@@ -1472,7 +1725,7 @@ class GameManager {
 
   renderSentries(context) {
     for (const placed of this.map.placed.values()) {
-      if (placed.kind !== "sentry" || !placed.targetX || !placed.targetY) continue;
+      if ((placed.kind !== "sentry" && !(placed.kind === "machine" && placed.machineType === "turret")) || !placed.targetX || !placed.targetY) continue;
       placed.beam = Math.max(0, (placed.beam || 0) - 1 / 60);
       if (placed.beam <= 0) continue;
       const origin = cellCenter(placed.x, placed.y);
@@ -1501,12 +1754,13 @@ class GameManager {
     const cellY = Math.floor(y / TILE);
     const gap = distance(this.player.x, this.player.y, (cellX + 0.5) * TILE, (cellY + 0.5) * TILE);
     if (gap > TILE * 4.8) return;
-    context.strokeStyle = this.activeTool === "pick" ? "#e7eee3b8" : this.activeTool === "fuse" ? "#d1ed69" : this.activeTool === "wand" ? "#f2ce70" : this.activeTool === "sword" ? "#d9e0df" : "#75e0b4";
+    const selectedItem = MATERIALS[this.activeTool] || MACHINES[this.activeTool];
+    context.strokeStyle = this.activeTool === "pick" ? "#e7eee3b8" : this.activeTool === "fuse" ? "#d1ed69" : this.activeTool === "wand" ? "#f2ce70" : "#75e0b4";
     context.lineWidth = 2;
     context.strokeRect(cellX * TILE + 3, cellY * TILE + 3, TILE - 6, TILE - 6);
-    if (this.activeTool !== "pick" && this.activeTool !== "fuse" && this.activeTool !== "wand" && this.activeTool !== "sword") {
+    if (selectedItem) {
       context.globalAlpha = 0.18;
-      context.fillStyle = MATERIALS[this.activeTool].highlight;
+      context.fillStyle = selectedItem.highlight || selectedItem.color;
       context.fillRect(cellX * TILE + 3, cellY * TILE + 3, TILE - 6, TILE - 6);
       context.globalAlpha = 1;
     }
@@ -1573,29 +1827,19 @@ window.addEventListener("keydown", (event) => {
   if ([" ", "arrowup", "arrowdown", "arrowleft", "arrowright"].includes(key)) event.preventDefault();
   keys.add(key);
   if (event.repeat) return;
-  if (key === "escape") {
-    event.preventDefault();
-    const crafting = document.querySelector("#crafting-box");
-    const loadout = document.querySelector("#loadout-box");
-    if (loadout.open) loadout.close();
-    else if (crafting.open) crafting.close();
-    else game.openCraftingBox();
-    return;
-  }
-  if (key === "q") {
-    const loadout = document.querySelector("#loadout-box");
-    if (loadout.open) loadout.close();
-    else game.openLoadoutBox();
-    return;
-  }
   if (key === "c") {
     const dialog = document.querySelector("#crafting-box");
     if (dialog.open) dialog.close();
     else game.openCraftingBox();
   }
-  if (key === "0") game.selectTool("pick");
+  if (key === "q") game.selectTool("pick");
   if (key === "f") game.selectTool("fuse");
-  if (key >= "1" && key <= "6") game.selectTool(game.hotbar[Number(key) - 1]);
+  if (key === "6") game.selectTool("wand");
+  if (key === "7") game.selectTool("sword");
+  if (Number(key) >= 1 && Number(key) <= 5) {
+    const slot = document.querySelectorAll(".hotbar-slot")[Number(key) - 1];
+    if (slot) game.selectTool(slot.dataset.tool);
+  }
 });
 window.addEventListener("keyup", (event) => keys.delete(event.key.toLowerCase()));
 window.addEventListener("blur", () => { keys.clear(); mouseDown = false; });
